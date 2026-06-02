@@ -10,14 +10,14 @@ st.set_page_config(page_title="FPD Pro - Multi-Sports Predictor", page_icon="�
 API_TOKEN = "bb42361060ff481499fe8538f511115a"
 headers = {"X-Auth-Token": API_TOKEN}
 
-st.title("📊 FPD Pro v5.1 : Football & Tennis Predictor")
-st.caption("Développé pour l'analyse des cotes réelles")
+st.title("📊 FPD Pro v5.2 : Football & Tennis Predictor")
+st.caption("Prise en compte dynamique du classement général")
 
 # Onglets principaux pour choisir le sport
 sport = st.sidebar.radio("🗂️ Sélectionne le Sport", ["Football ⚽", "Tennis 🎾"])
 
 # ==============================================================================
-# LE MODULE FOOTBALL (CORRIGÉ SANS SÉCURITÉ BLOQUANTE)
+# LE MODULE FOOTBALL (AVEC BONUS DE CLASSEMENT INTÉGRÉ)
 # ==============================================================================
 if sport == "Football ⚽":
     st.header("⚽ Analyse Football")
@@ -83,9 +83,10 @@ if sport == "Football ⚽":
     st.subheader("📊 Paramètres & Données des Équipes")
     col1, col2 = st.columns(2)
 
+    # Récupération enrichie incluant le rang au classement
     @st.cache_data(ttl=7200)
-    def recuperer_stats_equipe(code_league, team_name):
-        if code_league == "MANUAL": return 7, 5, 2, 2
+    def recuperer_stats_et_classement(code_league, team_name):
+        if code_league == "MANUAL": return 7, 5, 2, 2, 0
         url = f"https://api.football-data.org/v4/competitions/{code_league}/standings"
         try:
             res = requests.get(url, headers=headers)
@@ -97,37 +98,54 @@ if sport == "Football ⚽":
                         if row["team"]["name"] == team_name:
                             matchs_joues = row["playedGames"] if row["playedGames"] > 0 else 1
                             ratio = 5 / matchs_joues
-                            return max(1, round(row["goalsFor"] * ratio)), max(1, round(row["goalsAgainst"] * ratio)), max(0, min(5, round(row["won"] * ratio))), max(0, min(5, round(row["draw"] * ratio)))
+                            rank = row["position"]
+                            return (
+                                max(1, round(row["goalsFor"] * ratio)), 
+                                max(1, round(row["goalsAgainst"] * ratio)), 
+                                max(0, min(5, round(row["won"] * ratio))), 
+                                max(0, min(5, round(row["draw"] * ratio))),
+                                rank
+                            )
         except: pass
-        return 7, 5, 2, 2
+        return 7, 5, 2, 2, 0
 
     if not mode_manuel:
-        st.success(f"🔄 Données en direct récupérées !")
-        bm_a_auto, be_a_auto, v_a_auto, n_a_auto = recuperer_stats_equipe(code_compet, nom_a_api)
-        bm_b_auto, be_b_auto, v_b_auto, n_b_auto = recuperer_stats_equipe(code_compet, nom_b_api)
+        st.success(f"🔄 Données et classements en direct récupérés !")
+        bm_a_auto, be_a_auto, v_a_auto, n_a_auto, rang_a = recuperer_stats_et_classement(code_compet, nom_a_api)
+        bm_b_auto, be_b_auto, v_b_auto, n_b_auto, rang_b = recuperer_stats_et_classement(code_compet, nom_b_api)
     else:
-        bm_a_auto, be_a_auto, v_a_auto, n_a_auto = 7, 5, 2, 1
-        bm_b_auto, be_b_auto, v_b_auto, n_b_auto = 6, 6, 1, 2
+        bm_a_auto, be_a_auto, v_a_auto, n_a_auto, rang_a = 7, 5, 2, 1, 0
+        bm_b_auto, be_b_auto, v_b_auto, n_b_auto, rang_b = 6, 6, 1, 2, 0
 
     with col1:
         st.subheader(f"🛡️ {nom_a_api}")
+        if rang_a > 0:
+            st.markdown(f"🏆 Classement actuel : **{rang_a}e**")
+        else:
+            rang_a_in = st.number_input(f"Position Classement {nom_a_api} (Optionnel)", min_value=0, value=0, key="ra")
+            rang_a = rang_a_in if rang_a_in > 0 else 0
+            
         style_a = st.selectbox(f"Style Tactique ({nom_a_api})", ["Équilibré", "Ultra-Offensif", "Autobus / Bloc Bas"], key="sa")
         buts_marques_a = st.number_input("Buts marqués (sur 5 matchs)", value=int(bm_a_auto), min_value=0, key="bma")
         buts_encaisses_a = st.number_input("Buts encaissés (sur 5 matchs)", value=int(be_a_auto), min_value=0, key="bea")
         v_a_input = st.number_input("Victoires (sur 5 matchs)", value=int(v_a_auto), min_value=0, max_value=5, key="va")
         n_a_input = st.number_input("Nuls (sur 5 matchs)", value=int(n_a_auto), min_value=0, max_value=5, key="na")
-        # Calcul souple des défaites
         d_a_input = max(0, 5 - v_a_input - n_a_input)
         st.caption(f"Défaites estimées : {d_a_input}")
 
     with col2:
         st.subheader(f"⚔️ {nom_b_api}")
+        if rang_b > 0:
+            st.markdown(f"🏆 Classement actuel : **{rang_b}e**")
+        else:
+            rang_b_in = st.number_input(f"Position Classement {nom_b_api} (Optionnel)", min_value=0, value=0, key="rb")
+            rang_b = rang_b_in if rang_b_in > 0 else 0
+            
         style_b = st.selectbox(f"Style Tactique ({nom_b_api})", ["Équilibré", "Ultra-Offensif", "Autobus / Bloc Bas"], key="sb")
         buts_marques_b = st.number_input("Buts marqués (sur 5 matchs)", value=int(bm_b_auto), min_value=0, key="bmb")
         buts_encaisses_b = st.number_input("Buts encaissés (sur 5 matchs)", value=int(be_b_auto), min_value=0, key="beb")
         v_b_input = st.number_input("Victoires (sur 5 matchs)", value=int(v_b_auto), min_value=0, max_value=5, key="vb")
         n_b_input = st.number_input("Nuls (sur 5 matchs)", value=int(n_b_auto), min_value=0, max_value=5, key="nb")
-        # Calcul souple des défaites
         d_b_input = max(0, 5 - v_b_input - n_b_input)
         st.caption(f"Défaites estimées : {d_b_input}")
 
@@ -141,8 +159,20 @@ if sport == "Football ⚽":
     if st.button("📊 LANCER L'ANALYSE FOOTBALL", use_container_width=True):
         att_a, def_a = buts_marques_a / 5, buts_encaisses_a / 5
         att_b, def_b = buts_marques_b / 5, buts_encaisses_b / 5
+        
+        # Ajustement selon l'état de forme à court terme
         att_a *= (1.0 + (v_a_input * 0.05) - (d_a_input * 0.05))
         att_b *= (1.0 + (v_b_input * 0.05) - (d_b_input * 0.05))
+        
+        # AJUSTEMENT LOGIQUE SELON L'ÉCART AU CLASSEMENT GÉNÉRAL
+        if rang_a > 0 and rang_b > 0:
+            ecart_classement = rang_b - rang_a  # Exemple: 18e - 3e = +15 (Avantage équipe A)
+            if ecart_classement > 4:  # Équipe A nettement mieux classée
+                att_a *= 1.08
+                def_b *= 1.05
+            elif ecart_classement < -4:  # Équipe B nettement mieux classée
+                att_b *= 1.08
+                def_a *= 1.05
         
         if style_b == "Autobus / Bloc Bas": att_a *= 0.70; def_b *= 0.80
         if style_a == "Autobus / Bloc Bas": att_b *= 0.70; def_a *= 0.80
@@ -191,25 +221,20 @@ if sport == "Football ⚽":
 # LE MODULE TENNIS
 # ==============================================================================
 elif sport == "Tennis 🎾":
+    # (Le code tennis reste le même, très stable)
     st.header("🎾 Analyse Tennis v1.0")
     st.info("💡 Au tennis, pas de match nul ! Le modèle s'appuie sur le ratio de victoires et la surface.")
-
-    st.subheader("👤 1. Profil des Joueurs")
     tx1, tx2 = st.columns(2)
     joueur_1 = tx1.text_input("Nom du Joueur 1", "Joueur A")
     joueur_2 = tx2.text_input("Nom du Joueur 2", "Joueur B")
-
     st.markdown("---")
     st.subheader("📊 2. Forme Récente & Terrain")
     surface = st.selectbox("Type de Surface de Court", ["Dur / Indoor 🟦", "Terre Battue 🟫", "Gazon 🟩"])
-    
     col_t1, col_t2 = st.columns(2)
     victoires_j1 = col_t1.number_input(f"Victoires de {joueur_1} (sur ses 10 derniers matchs)", min_value=0, max_value=10, value=6)
     victoires_j2 = col_t2.number_input(f"Victoires de {joueur_2} (sur ses 10 derniers matchs)", min_value=0, max_value=10, value=6)
-    
     pref_j1 = col_t1.toggle(f"{joueur_1} adore cette surface", value=False)
     pref_j2 = col_t2.toggle(f"{joueur_2} adore cette surface", value=False)
-
     st.markdown("---")
     st.subheader("💰 3. Cotes Réelles Bet261")
     cx_t1, cx_t2 = st.columns(2)
@@ -221,32 +246,25 @@ elif sport == "Tennis 🎾":
         score_j2 = victoires_j2 * 10
         if pref_j1: score_j1 += 15
         if pref_j2: score_j2 += 15
-            
         total_scores = score_j1 + score_j2
         if total_scores == 0: total_scores = 1
-        
         prob_j1 = (score_j1 / total_scores) * 100
         prob_j2 = (score_j2 / total_scores) * 100
-        
         implied_j1 = (1 / cote_j1) * 100
         implied_j2 = (1 / cote_j2) * 100
         total_implied = implied_j1 + implied_j2
         implied_j1 = (implied_j1 / total_implied) * 100
         implied_j2 = (implied_j2 / total_implied) * 100
-        
         prob_j1_finale = (prob_j1 * 0.6) + (implied_j1 * 0.4)
         prob_j2_finale = (prob_j2 * 0.6) + (implied_j2 * 0.4)
-
         st.subheader("📈 Pourcentages Probables de Victoire")
         res_col1, res_col2 = st.columns(2)
         res_col1.metric(f"Probabilité {joueur_1}", f"{prob_j1_finale:.1f}%")
         res_col2.metric(f"Probabilité {joueur_2}", f"{prob_j2_finale:.1f}%")
-
         st.markdown("---")
         st.subheader("🔎 Opportunités Détectées (vs Bet261)")
         val_j1 = (prob_j1_finale * cote_j1) / 100
         val_j2 = (prob_j2_finale * cote_j2) / 100
-        
         un_value_trouve = False
         if val_j1 > 1.06:
             st.warning(f"⚠️ **VALUE BET ÉLEVÉ sur {joueur_1}** !")
@@ -256,7 +274,6 @@ elif sport == "Tennis 🎾":
             un_value_trouve = True
         if not un_value_trouve:
             st.info("💡 Cotes bien ajustées. Aucun écart spéculatif majeur détecté.")
-
         st.subheader("🛡️ Option Sécurité Tennis (Mise : 5%)")
         if prob_j1_finale > 62: st.success(f"🟩 **Cadre Vert** : Victoire Sèche de **{joueur_1}**")
         elif prob_j2_finale > 62: st.success(f"🟩 **Cadre Vert** : Victoire Sèche de **{joueur_2}**")
