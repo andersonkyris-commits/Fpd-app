@@ -10,14 +10,14 @@ st.set_page_config(page_title="FPD Pro - Multi-Sports Predictor", page_icon="�
 API_TOKEN = "bb42361060ff481499fe8538f511115a"
 headers = {"X-Auth-Token": API_TOKEN}
 
-st.title("📊 FPD Pro v5.0 : Football & Tennis Predictor")
+st.title("📊 FPD Pro v5.1 : Football & Tennis Predictor")
 st.caption("Développé pour l'analyse des cotes réelles")
 
 # Onglets principaux pour choisir le sport
 sport = st.sidebar.radio("🗂️ Sélectionne le Sport", ["Football ⚽", "Tennis 🎾"])
 
 # ==============================================================================
-# LE MODULE FOOTBALL (GARDÉ INTACT)
+# LE MODULE FOOTBALL (CORRIGÉ SANS SÉCURITÉ BLOQUANTE)
 # ==============================================================================
 if sport == "Football ⚽":
     st.header("⚽ Analyse Football")
@@ -97,7 +97,7 @@ if sport == "Football ⚽":
                         if row["team"]["name"] == team_name:
                             matchs_joues = row["playedGames"] if row["playedGames"] > 0 else 1
                             ratio = 5 / matchs_joues
-                            return max(1, round(row["goalsFor"] * ratio)), max(1, round(row["goalsAgainst"] * ratio)), max(0, min(5, round(row["won"] * ratio))), max(0, min(5 - max(0, min(5, round(row["won"] * ratio))), round(row["draw"] * ratio)))
+                            return max(1, round(row["goalsFor"] * ratio)), max(1, round(row["goalsAgainst"] * ratio)), max(0, min(5, round(row["won"] * ratio))), max(0, min(5, round(row["draw"] * ratio)))
         except: pass
         return 7, 5, 2, 2
 
@@ -111,21 +111,25 @@ if sport == "Football ⚽":
 
     with col1:
         st.subheader(f"🛡️ {nom_a_api}")
-        style_a = st.selectbox(f"Style Tactique", ["Équilibré", "Ultra-Offensif", "Autobus / Bloc Bas"], key="sa")
-        buts_marques_a = st.number_input("Buts marqués (sur 5 matchs)", value=int(bm_a_auto), key="bma")
-        buts_encaisses_a = st.number_input("Buts encaissés (sur 5 matchs)", value=int(be_a_auto), key="bea")
-        v_a_input = st.number_input("Victoires", value=int(v_a_auto), max_value=5, key="va")
-        n_a_input = st.number_input("Nuls", value=int(n_a_auto), max_value=5-v_a_input, key="na")
+        style_a = st.selectbox(f"Style Tactique ({nom_a_api})", ["Équilibré", "Ultra-Offensif", "Autobus / Bloc Bas"], key="sa")
+        buts_marques_a = st.number_input("Buts marqués (sur 5 matchs)", value=int(bm_a_auto), min_value=0, key="bma")
+        buts_encaisses_a = st.number_input("Buts encaissés (sur 5 matchs)", value=int(be_a_auto), min_value=0, key="bea")
+        v_a_input = st.number_input("Victoires (sur 5 matchs)", value=int(v_a_auto), min_value=0, max_value=5, key="va")
+        n_a_input = st.number_input("Nuls (sur 5 matchs)", value=int(n_a_auto), min_value=0, max_value=5, key="na")
+        # Calcul souple des défaites
         d_a_input = max(0, 5 - v_a_input - n_a_input)
+        st.caption(f"Défaites estimées : {d_a_input}")
 
     with col2:
         st.subheader(f"⚔️ {nom_b_api}")
-        style_b = st.selectbox(f"Style Tactique", ["Équilibré", "Ultra-Offensif", "Autobus / Bloc Bas"], key="sb")
-        buts_marques_b = st.number_input("Buts marqués (sur 5 matchs)", value=int(bm_b_auto), key="bmb")
-        buts_encaisses_b = st.number_input("Buts encaissés (sur 5 matchs)", value=int(be_b_auto), key="beb")
-        v_b_input = st.number_input("Victoires", value=int(v_b_auto), max_value=5, key="vb")
-        n_b_input = st.number_input("Nuls", value=int(n_b_auto), max_value=5-v_b_input, key="nb")
+        style_b = st.selectbox(f"Style Tactique ({nom_b_api})", ["Équilibré", "Ultra-Offensif", "Autobus / Bloc Bas"], key="sb")
+        buts_marques_b = st.number_input("Buts marqués (sur 5 matchs)", value=int(bm_b_auto), min_value=0, key="bmb")
+        buts_encaisses_b = st.number_input("Buts encaissés (sur 5 matchs)", value=int(be_b_auto), min_value=0, key="beb")
+        v_b_input = st.number_input("Victoires (sur 5 matchs)", value=int(v_b_auto), min_value=0, max_value=5, key="vb")
+        n_b_input = st.number_input("Nuls (sur 5 matchs)", value=int(n_b_auto), min_value=0, max_value=5, key="nb")
+        # Calcul souple des défaites
         d_b_input = max(0, 5 - v_b_input - n_b_input)
+        st.caption(f"Défaites estimées : {d_b_input}")
 
     st.markdown("---")
     st.subheader("💰 Cotes Réelles Bet261")
@@ -171,7 +175,6 @@ if sport == "Football ⚽":
         c2.metric("Match Nul", f"{p_nul:.1f}%")
         c3.metric(f"Victoire {nom_b_api}", f"{p_v_b:.1f}%")
         
-        # Value Bets & Cadre Vert
         st.markdown("---")
         value_a, value_nul, value_b = (p_v_a * cote_a) / 100, (p_nul * cote_nul) / 100, (p_v_b * cote_b) / 100
         if value_a > 1.05: st.warning(f"⚠️ Value Bet sur {nom_a_api} (Cote: {cote_a})")
@@ -185,22 +188,19 @@ if sport == "Football ⚽":
         else: st.success("🔒 **Cadre Vert** : Moins de 3,5 buts dans le match")
 
 # ==============================================================================
-# LE TOUT NOUVEAU MODULE TENNIS (MOTEUR BI-VARIÉ)
+# LE MODULE TENNIS
 # ==============================================================================
 elif sport == "Tennis 🎾":
     st.header("🎾 Analyse Tennis v1.0")
     st.info("💡 Au tennis, pas de match nul ! Le modèle s'appuie sur le ratio de victoires et la surface.")
 
-    # 1. ENTRÉE DES JOUEURS
     st.subheader("👤 1. Profil des Joueurs")
     tx1, tx2 = st.columns(2)
     joueur_1 = tx1.text_input("Nom du Joueur 1", "Joueur A")
     joueur_2 = tx2.text_input("Nom du Joueur 2", "Joueur B")
 
-    # 2. PARAMÈTRES DE FORME ET SURFACE
     st.markdown("---")
     st.subheader("📊 2. Forme Récente & Terrain")
-    
     surface = st.selectbox("Type de Surface de Court", ["Dur / Indoor 🟦", "Terre Battue 🟫", "Gazon 🟩"])
     
     col_t1, col_t2 = st.columns(2)
@@ -210,7 +210,6 @@ elif sport == "Tennis 🎾":
     pref_j1 = col_t1.toggle(f"{joueur_1} adore cette surface", value=False)
     pref_j2 = col_t2.toggle(f"{joueur_2} adore cette surface", value=False)
 
-    # 3. COTES BET261
     st.markdown("---")
     st.subheader("💰 3. Cotes Réelles Bet261")
     cx_t1, cx_t2 = st.columns(2)
@@ -218,40 +217,31 @@ elif sport == "Tennis 🎾":
     cote_j2 = cx_t2.number_input(f"Cote {joueur_2}", min_value=1.01, value=2.00, step=0.05)
 
     if st.button("📊 LANCER L'ANALYSE TENNIS", use_container_width=True):
-        # Algorithme de performance Tennis de base (sur base 100 points)
         score_j1 = victoires_j1 * 10
         score_j2 = victoires_j2 * 10
-        
-        # Prise en compte de la surface préférée
         if pref_j1: score_j1 += 15
         if pref_j2: score_j2 += 15
             
-        # Transformation en probabilité sur 100%
         total_scores = score_j1 + score_j2
-        if total_scores == 0: total_scores = 1 # Sécurité anti division par 0
+        if total_scores == 0: total_scores = 1
         
         prob_j1 = (score_j1 / total_scores) * 100
         prob_j2 = (score_j2 / total_scores) * 100
         
-        # Ajustement léger par rapport à l'analyse implicite des bookmakers (cotes)
-        # Évite que l'algorithme ne s'écarte trop de la réalité du marché
         implied_j1 = (1 / cote_j1) * 100
         implied_j2 = (1 / cote_j2) * 100
         total_implied = implied_j1 + implied_j2
         implied_j1 = (implied_j1 / total_implied) * 100
         implied_j2 = (implied_j2 / total_implied) * 100
         
-        # Mix 60% Forme / 40% Marché des cotes
         prob_j1_finale = (prob_j1 * 0.6) + (implied_j1 * 0.4)
         prob_j2_finale = (prob_j2 * 0.6) + (implied_j2 * 0.4)
 
-        # Affichage des résultats
         st.subheader("📈 Pourcentages Probables de Victoire")
         res_col1, res_col2 = st.columns(2)
         res_col1.metric(f"Probabilité {joueur_1}", f"{prob_j1_finale:.1f}%")
         res_col2.metric(f"Probabilité {joueur_2}", f"{prob_j2_finale:.1f}%")
 
-        # Analyse des opportunités de Value Bet
         st.markdown("---")
         st.subheader("🔎 Opportunités Détectées (vs Bet261)")
         val_j1 = (prob_j1_finale * cote_j1) / 100
@@ -259,22 +249,16 @@ elif sport == "Tennis 🎾":
         
         un_value_trouve = False
         if val_j1 > 1.06:
-            st.warning(f"⚠️ **VALUE BET ÉLEVÉ sur {joueur_1}** ! La cote de {cote_j1} est trop haute pour sa forme.")
+            st.warning(f"⚠️ **VALUE BET ÉLEVÉ sur {joueur_1}** !")
             un_value_trouve = True
         if val_j2 > 1.06:
-            st.warning(f"⚠️ **VALUE BET ÉLEVÉ sur {joueur_2}** ! La cote de {cote_j2} est trop haute pour sa forme.")
+            st.warning(f"⚠️ **VALUE BET ÉLEVÉ sur {joueur_2}** !")
             un_value_trouve = True
-            
         if not un_value_trouve:
             st.info("💡 Cotes bien ajustées. Aucun écart spéculatif majeur détecté.")
 
-        # CADRE VERT TENNIS
         st.subheader("🛡️ Option Sécurité Tennis (Mise : 5%)")
-        if prob_j1_finale > 62:
-            st.success(f"🟩 **Cadre Vert** : Victoire Sèche de **{joueur_1}**")
-        elif prob_j2_finale > 62:
-            st.success(f"🟩 **Cadre Vert** : Victoire Sèche de **{joueur_2}**")
-        else:
-            # Match serré, on sécurise sur les sets sur Bet261
-            st.success(f"🟩 **Cadre Vert** : Option Sécurité - 'Le joueur qui a la plus petite cote prend au moins 1 Set' dans le match.")
-                    
+        if prob_j1_finale > 62: st.success(f"🟩 **Cadre Vert** : Victoire Sèche de **{joueur_1}**")
+        elif prob_j2_finale > 62: st.success(f"🟩 **Cadre Vert** : Victoire Sèche de **{joueur_2}**")
+        else: st.success(f"🟩 **Cadre Vert** : 'Le joueur favori prend au moins 1 Set' dans le match.")
+        
