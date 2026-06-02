@@ -64,7 +64,7 @@ if st.button("📊 Lancer l'Analyse Tactique FPD", use_container_width=True):
         def_b *= 1.20
 
     # --- AJUSTEMENT CONTEXTE DE MATCH ---
-     bonus_domicile = 1.15 if type_match == "Match de Championnat (Domicile/Extérieur)" else 1.0
+    bonus_domicile = 1.15 if type_match == "Match de Championnat (Domicile/Extérieur)" else 1.0
     
     # Estimation finale des buts attendus
     buts_attendus_a = ((att_a + def_b) / 2) * bonus_domicile
@@ -121,4 +121,3 @@ if st.button("📊 Lancer l'Analyse Tactique FPD", use_container_width=True):
 
 st.markdown("---")
 st.caption("FPD v2.0 - Modèle de Poisson ajusté avec matrices de styles tactiques.")
-    
