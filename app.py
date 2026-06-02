@@ -1,121 +1,196 @@
 import streamlit as st
+import requests
 import math
+from datetime import datetime
 
 # Configuration de la page
 st.set_page_config(page_title="FPD Pro - Football PronosticData", page_icon="⚽", layout="centered")
 
-# Titre de l'application
-st.title("⚽ FPD Pro : Football PronosticData v3.3")
-st.subheader("Analyse stratégique globale avec Matrice Forme 1N2 Complète")
+# Clé API Football-Data.org intégrée
+API_TOKEN = "bb42361060ff481499fe8538f511115a"
+headers = {"X-Auth-Token": API_TOKEN}
+
+st.title("⚽ FPD Pro : Football PronosticData v4.1")
+st.subheader("Analyses Auto (Ligues & Coupes) + Mode Manuel Intégré")
 
 st.markdown("---")
 
-# 1. PARAMÈTRES DU MATCH
-st.header("📋 1. Contexte du Match")
-type_match = st.selectbox("Type de compétition / Contexte", [
-    "Match de Championnat (Saison régulière)", 
-    "Match de Coupe : Phase avancée (Stats disponibles)", 
-    "Match d'Ouverture / 1er Match de Poule (Zéro stat)",
-    "Match Amical (Pré-saison / Match de préparation)"
-])
+# 1. SÉLECTION DE LA COMPÉTITION
+st.header("🌍 1. Choix de la Compétition")
+
+# Liste étendue incluant les coupes majeures gratuites sur football-data.org
+DICT_COMPETS = {
+    "Ligue des Champions (Europe)": "CL",
+    "Coupe du Monde (FIFA)": "WC",
+    "Championnat d'Europe (Euro)": "EC",
+    "Premier League (Angleterre)": "PL",
+    "Ligue 1 (France)": "FL1",
+    "La Liga (Espagne)": "PD",
+    "Serie A (Italie)": "SA",
+    "Bundesliga (Allemagne)": "BL1",
+    "Eredivisie (Pays-Bas)": "DED",
+    "Primeira Liga (Portugal)": "PPL",
+    "➕ [MODE MANUEL] Match Amical / Autre Coupe": "MANUAL"
+}
+
+compet_choisie = st.selectbox("Sélectionne une compétition ou un mode", list(DICT_COMPETS.keys()))
+code_compet = DICT_COMPETS[compet_choisie]
+
+# Fonction pour récupérer les matchs à venir
+@st.cache_data(ttl=1800)  # Cache de 30 min pour coller au calendrier
+def charger_matchs(code):
+    if code == "MANUAL":
+        return []
+    url = f"https://api.football-data.org/v4/competitions/{code}/matches?status=SCHEDULED"
+    try:
+        response = requests.get(url, headers=headers)
+        if response.status_code == 200:
+            return response.json().get("matches", [])
+    except:
+        pass
+    return []
+
+matchs = charger_matchs(code_compet)
+
+# Gestion du mode d'entrée des données
+if code_compet == "MANUAL" or not matchs:
+    if code_compet != "MANUAL":
+        st.warning("⚠️ Aucun match programmé trouvé sur l'API pour cette coupe ou limite atteinte. Passage automatique en mode manuel.")
+    else:
+        st.info("📝 Mode Manuel activé. Entre le nom des équipes ci-dessous.")
+    
+    mode_manuel = True
+    col_input1, col_input2 = st.columns(2)
+    nom_a_api = col_input1.text_input("Nom de l'Équipe à Domicile (ou Sélection A)", "Équipe A")
+    nom_b_api = col_input2.text_input("Nom de l'Équipe à l'Extérieur (ou Sélection B)", "Équipe B")
+else:
+    mode_manuel = False
+    liste_options_matchs = []
+    dict_matchs = {}
+    
+    for m in matchs[:20]:  # On affiche jusqu'aux 20 prochains matchs
+        date_utc = m.get("utcDate", "")
+        try:
+            date_obj = datetime.strptime(date_utc, "%Y-%m-%dT%H:%M:%SZ")
+            date_str = date_obj.strftime("%d/%m %H:%M")
+        except:
+            date_str = ""
+            
+        equipe_dom = m["homeTeam"]["name"]
+        equipe_ext = m["awayTeam"]["name"]
+        label = f"[{date_str}] {equipe_dom} vs {equipe_ext}"
+        liste_options_matchs.append(label)
+        dict_matchs[label] = m
+
+    match_selectionne = st.selectbox("Sélectionne le match à analyser", liste_options_matchs)
+    match_data = dict_matchs[match_selectionne]
+    
+    nom_a_api = match_data["homeTeam"]["name"]
+    nom_b_api = match_data["awayTeam"]["name"]
 
 st.markdown("---")
 
-# 2. ENTRÉE DES DONNÉES ÉQUIPES
+# 2. COLLECTE DES STATISTIQUES
+st.header("📊 2. Paramètres & Données des Équipes")
+
 col1, col2 = st.columns(2)
 
-# Variable d'activation de la forme 1N2
-activer_forme_1n2 = type_match in ["Match de Championnat (Saison régulière)", "Match Amical (Pré-saison / Match de préparation)"]
+@st.cache_data(ttl=7200)
+def recuperer_stats_equipe(code_league, team_name):
+    if code_league == "MANUAL":
+        return 7, 5, 2, 2
+    url = f"https://api.football-data.org/v4/competitions/{code_league}/standings"
+    try:
+        res = requests.get(url, headers=headers)
+        if res.status_code == 200:
+            standings = res.json().get("standings", [])
+            if standings:
+                table = standings[0].get("table", [])
+                for row in table:
+                    if row["team"]["name"] == team_name:
+                        matchs_joues = row["playedGames"] if row["playedGames"] > 0 else 1
+                        ratio = 5 / matchs_joues
+                        b_marques = max(1, round(row["goalsFor"] * ratio))
+                        b_encaisses = max(1, round(row["goalsAgainst"] * ratio))
+                        victoires = max(0, min(5, round(row["won"] * ratio)))
+                        nuls = max(0, min(5 - victoires, round(row["draw"] * ratio)))
+                        return b_marques, b_encaisses, victoires, nuls
+    except:
+        pass
+    return 7, 5, 2, 2  # Secours par défaut
+
+if not mode_manuel:
+    st.success(f"🔄 Données en direct récupérées pour **{nom_a_api}** et **{nom_b_api}** !")
+    bm_a_auto, be_a_auto, v_a_auto, n_a_auto = recuperer_stats_equipe(code_compet, nom_a_api)
+    bm_b_auto, be_b_auto, v_b_auto, n_b_auto = recuperer_stats_equipe(code_compet, nom_b_api)
+else:
+    # Valeurs moyennes de départ pour un match amical / manuel, modifiables librement
+    bm_a_auto, be_a_auto, v_a_auto, n_a_auto = 7, 5, 2, 1
+    bm_b_auto, be_b_auto, v_b_auto, n_b_auto = 6, 6, 1, 2
 
 with col1:
-    st.header("🛡️ Équipe A")
-    nom_a = st.text_input("Nom de l'équipe A", "Équipe A")
-    style_a = st.selectbox(f"Style Tactique de {nom_a}", ["Équilibré", "Ultra-Offensif", "Autobus / Bloc Bas"], key="sa")
-    
-    if type_match == "Match d'Ouverture / 1er Match de Poule (Zéro stat)":
-        niveau_a = st.slider(f"Niveau global de {nom_a} (10 = Élite)", 1, 10, 7, key="na")
-        buts_marques_a, buts_encaisses_a = 0, 0
-    else:
-        buts_marques_a = st.number_input("Buts marqués (5 derniers matchs)", min_value=0, value=10, key="bma")
-        buts_encaisses_a = st.number_input("Buts encaissés (5 derniers matchs)", min_value=0, value=5, key="bea")
-        if activer_forme_1n2:
-            v_a_input = st.number_input("Victoires (5 derniers matchs)", min_value=0, max_value=5, value=3, key="va")
-            n_a_input = st.number_input("Matchs Nuls (5 derniers matchs)", min_value=0, max_value=5-v_a_input, value=1, key="na_1n2")
-            d_a_input = st.number_input("Défaites (5 derniers matchs)", min_value=0, max_value=5-v_a_input-n_a_input, value=5-v_a_input-n_a_input, disabled=True, key="da")
-            st.caption(f"Résultat automatique : {d_a_input} Défaite(s)")
+    st.subheader(f"🛡️ {nom_a_api}")
+    style_a = st.selectbox(f"Style Tactique ({nom_a_api})", ["Équilibré", "Ultra-Offensif", "Autobus / Bloc Bas"], key="sa")
+    buts_marques_a = st.number_input("Buts marqués (sur 5 matchs)", value=int(bm_a_auto), key="bma")
+    buts_encaisses_a = st.number_input("Buts encaissés (sur 5 matchs)", value=int(be_a_auto), key="bea")
+    v_a_input = st.number_input("Victoires (sur 5 matchs)", value=int(v_a_auto), max_value=5, key="va")
+    n_a_input = st.number_input("Nuls (sur 5 matchs)", value=int(n_a_auto), max_value=5-v_a_input, key="na")
+    d_a_input = max(0, 5 - v_a_input - n_a_input)
+    st.caption(f"Défaites déduites : {d_a_input}")
 
 with col2:
-    st.header("⚔️ Équipe B")
-    nom_b = st.text_input("Nom de l'équipe B", "Équipe B")
-    style_b = st.selectbox(f"Style Tactique de {nom_b}", ["Équilibré", "Ultra-Offensif", "Autobus / Bloc Bas"], key="sb")
-    
-    if type_match == "Match d'Ouverture / 1er Match de Poule (Zéro stat)":
-        niveau_b = st.slider(f"Niveau global de {nom_b} (10 = Élite)", 1, 10, 5, key="nb")
-        buts_marques_b, buts_encaisses_b = 0, 0
-    else:
-        buts_marques_b = st.number_input("Buts marqués (5 derniers matchs)", min_value=0, value=6, key="bmb")
-        buts_encaisses_b = st.number_input("Buts encaissés (5 derniers matchs)", min_value=0, value=4, key="beb")
-        if activer_forme_1n2:
-            v_b_input = st.number_input("Victoires (5 derniers matchs)", min_value=0, max_value=5, value=2, key="vb")
-            n_b_input = st.number_input("Matchs Nuls (5 derniers matchs)", min_value=0, max_value=5-v_b_input, value=1, key="nb_1n2")
-            d_b_input = st.number_input("Défaites (5 derniers matchs)", min_value=0, max_value=5-v_b_input-n_b_input, value=5-v_b_input-n_b_input, disabled=True, key="db")
-            st.caption(f"Résultat automatique : {d_b_input} Défaite(s)")
+    st.subheader(f"⚔️ {nom_b_api}")
+    style_b = st.selectbox(f"Style Tactique ({nom_b_api})", ["Équilibré", "Ultra-Offensif", "Autobus / Bloc Bas"], key="sb")
+    buts_marques_b = st.number_input("Buts marqués (sur 5 matchs)", value=int(bm_b_auto), key="bmb")
+    buts_encaisses_b = st.number_input("Buts encaissés (sur 5 matchs)", value=int(be_b_auto), key="beb")
+    v_b_input = st.number_input("Victoires (sur 5 matchs)", value=int(v_b_auto), max_value=5, key="vb")
+    n_b_input = st.number_input("Nuls (sur 5 matchs)", value=int(n_b_auto), max_value=5-v_b_input, key="nb")
+    d_b_input = max(0, 5 - v_b_input - n_b_input)
+    st.caption(f"Défaites déduites : {d_b_input}")
 
 st.markdown("---")
 
 # 3. INTERFACE DES COTES BET261
-st.header("💰 2. Cotes Bet261 (Optionnel)")
+st.header("💰 3. Cotes Réelles Bet261")
 cx1, cx2, cx3 = st.columns(3)
-cote_a = cx1.number_input(f"Cote {nom_a}", min_value=1.0, value=2.10, step=0.05)
-cote_nul = cx2.number_input("Cote Nul", min_value=1.0, value=3.20, step=0.05)
-cote_b = cx3.number_input(f"Cote {nom_b}", min_value=1.0, value=3.40, step=0.05)
+cote_a = cx1.number_input(f"Cote {nom_a_api}", min_value=1.0, value=2.00, step=0.05)
+cote_nul = cx2.number_input("Cote Match Nul", min_value=1.0, value=3.20, step=0.05)
+cote_b = cx3.number_input(f"Cote {nom_b_api}", min_value=1.0, value=3.50, step=0.05)
 
 st.markdown("---")
 
-# BOUTON DE CALCUL
-if st.button("📊 ANALYSER AVEC FPD PRO", use_container_width=True):
+# MOTEUR DE CALCULS MATHÉMATIQUES
+if st.button("📊 LANCER L'ANALYSE PRÉDICTIVE v4.1", use_container_width=True):
+    # Passage des stats en moyennes par match
+    att_a, def_a = buts_marques_a / 5, buts_encaisses_a / 5
+    att_b, def_b = buts_marques_b / 5, buts_encaisses_b / 5
     
-    if type_match == "Match d'Ouverture / 1er Match de Poule (Zéro stat)":
-        total_niveau = niveau_a + niveau_b
-        base_buts_match = 2.2 
-        buts_attendus_a = ((niveau_a / total_niveau) * base_buts_match) * 0.90
-        buts_attendus_b = ((niveau_b / total_niveau) * base_buts_match) * 0.90
-    else:
-        att_a, def_a = buts_marques_a / 5, buts_encaisses_a / 5
-        att_b, def_b = buts_marques_b / 5, buts_encaisses_b / 5
+    # Prise en compte de l'état de forme 1N2
+    confiance_a = 1.0 + (v_a_input * 0.05) - (d_a_input * 0.05)
+    confiance_b = 1.0 + (v_b_input * 0.05) - (d_b_input * 0.05)
+    
+    att_a *= confiance_a
+    att_b *= confiance_b
+    
+    # Profils tactiques
+    if style_b == "Autobus / Bloc Bas":
+        att_a *= 0.70; def_b *= 0.80
+    if style_a == "Autobus / Bloc Bas":
+        att_b *= 0.70; def_a *= 0.80
+    if style_a == "Ultra-Offensif":
+        att_a *= 1.25; def_a *= 1.20
+    if style_b == "Ultra-Offensif":
+        att_b *= 1.25; def_b *= 1.20
         
-        # --- COEFFICIENT DE CONFIANCE RECALCULÉ (1N2 complet) ---
-        confiance_a = 1.0
-        confiance_b = 1.0
-        
-        if activer_forme_1n2:
-            # Les victoires boostent (+5%), les nuls stabilisent (0%), les défaites plombent (-5%)
-            confiance_a += (v_a_input * 0.05) - (d_a_input * 0.05)
-            confiance_b += (v_b_input * 0.05) - (d_b_input * 0.05)
-            
-        att_a *= confiance_a
-        att_b *= confiance_b
-        
-        # Modificateurs tactiques
-        if style_b == "Autobus / Bloc Bas":
-            att_a *= 0.70; def_b *= 0.80
-        if style_a == "Autobus / Bloc Bas":
-            att_b *= 0.70; def_a *= 0.80
-        if style_a == "Ultra-Offensif":
-            att_a *= 1.25; def_a *= 1.20
-        if style_b == "Ultra-Offensif":
-            att_b *= 1.25; def_b *= 1.20
-            
-        bonus_domicile = 1.07 if type_match == "Match Amical (Pré-saison / Match de préparation)" else (1.15 if type_match == "Match de Championnat (Saison régulière)" else 1.0)
-        
-        buts_attendus_a = ((att_a + def_b) / 2) * bonus_domicile
-        buts_attendus_b = (att_b + def_a) / 2
-        
-        if type_match == "Match Amical (Pré-saison / Match de préparation)":
-            buts_attendus_a = (buts_attendus_a + 1.2) / 2
-            buts_attendus_b = (buts_attendus_b + 1.2) / 2
-
-    # Loi de Poisson
+    # Avantage terrain ajustable selon les compétitions
+    # Moins marqué en terrain neutre (Coupes ou matchs amicaux internationaux délocalisés)
+    is_neutral = code_compet in ["WC", "EC", "MANUAL"]
+    bonus_domicile = 1.05 if is_neutral else 1.15
+    
+    buts_attendus_a = ((att_a + def_b) / 2) * bonus_domicile
+    buts_attendus_b = (att_b + def_a) / 2
+    
+    # Loi de Poisson pour estimer la distribution des scores
     prob_a = [math.exp(-buts_attendus_a) * (buts_attendus_a**i) / math.factorial(i) for i in range(7)]
     prob_b = [math.exp(-buts_attendus_b) * (buts_attendus_b**i) / math.factorial(i) for i in range(7)]
     
@@ -130,54 +205,50 @@ if st.button("📊 ANALYSER AVEC FPD PRO", use_container_width=True):
     total = v_a + nul + v_b
     p_v_a, p_nul, p_v_b = (v_a / total) * 100, (nul / total) * 100, (v_b / total) * 100
     
-    # Ajustement pour la propension aux matchs nuls (si les deux équipes font beaucoup de nuls ou si c'est amical)
-    if activer_forme_1n2:
-        bonus_nul_stats = (n_a_input + n_b_input) * 2.0 # Augmente les chances de nul si les équipes sont habituées
-        p_nul += bonus_nul_stats
-    if type_match == "Match Amical (Pré-saison / Match de préparation)":
-        p_nul += 5.0
-        
+    # Pondération des tendances aux matchs nuls
+    bonus_nul_stats = (n_a_input + n_b_input) * 2.0
+    p_nul += bonus_nul_stats
+    
     total_ajuste = p_v_a + p_nul + p_v_b
     p_v_a, p_nul, p_v_b = (p_v_a/total_ajuste)*100, (p_nul/total_ajuste)*100, (p_v_b/total_ajuste)*100
 
-    # AFFICHAGE
-    st.header("📈 Probabilités FPD Pro")
+    # AFFICHAGE DES RÉSULTATS
+    st.header("📈 Résultats des Calculs Prédictifs")
     c1, c2, c3 = st.columns(3)
-    c1.metric(f"Victoire {nom_a}", f"{p_v_a:.1f}%")
+    c1.metric(f"Victoire {nom_a_api}", f"{p_v_a:.1f}%")
     c2.metric("Match Nul", f"{p_nul:.1f}%")
-    c3.metric(f"Victoire {nom_b}", f"{p_v_b:.1f}%")
+    c3.metric(f"Victoire {nom_b_api}", f"{p_v_b:.1f}%")
     
-    # VALUE BETS
+    # RECHERCHE DE VALUE BETS
     st.markdown("---")
-    st.header("🔎 Analyse des opportunités Bet261")
+    st.header("🔎 Opportunités Détectées (vs Bet261)")
     value_a, value_nul, value_b = (p_v_a * cote_a) / 100, (p_nul * cote_nul) / 100, (p_v_b * cote_b) / 100
     
-    opportunites = 0
+    opp = 0
     if value_a > 1.05:
-        st.warning(f"⚠️ **VALUE BET sur {nom_a}** (Cote : {cote_a})"); opportunites += 1
+        st.warning(f"⚠️ **VALUE BET ÉLEVÉ sur {nom_a_api}** (Cote : {cote_a})"); opp += 1
     if value_nul > 1.05:
-        st.warning(f"⚠️ **VALUE BET sur le Match Nul** (Cote : {cote_nul})"); opportunites += 1
+        st.warning(f"⚠️ **VALUE BET ÉLEVÉ sur le Match Nul** (Cote : {cote_nul})"); opp += 1
     if value_b > 1.05:
-        st.warning(f"⚠️ **VALUE BET sur {nom_b}** (Cote : {cote_b})"); opportunites += 1
-    if opportunites == 0:
-        st.info("💡 Les cotes semblent équilibrées par rapport aux risques.")
+        st.warning(f"⚠️ **VALUE BET ÉLEVÉ sur {nom_b_api}** (Cote : {cote_b})"); opp += 1
+    if opp == 0:
+        st.info("💡 Les cotes de Bet261 sont équilibrées par rapport au modèle mathématique.")
 
-    # CONSEILS SÉCURITÉ
+    # CADRE VERT : SÉCURITÉ CONSEILLÉE
     st.markdown("---")
-    st.header("🛡️ Conseil Sécurité FPD (Haute Fiabilité)")
+    st.header("🛡️ Option Sécurité FPD Pro (Mise conseillée : 5%)")
     
-    if type_match == "Match Amical (Pré-saison / Match de préparation)":
-        st.success("🔒 **Option Sécurité Amical (+90%)** : 'Moins de 4,5 buts' ou 'Chance Double' sur le favori.")
-    elif type_match == "Match d'Ouverture / 1er Match de Poule (Zéro stat)":
-        st.success("🔒 **Option Spéciale Ouverture (+90%)** : 'Moins de 3,5 buts'.")
-    else:
-        if style_a == "Autobus / Bloc Bas" and style_b == "Autobus / Bloc Bas":
-            st.success("🔒 **Option Haute Fiabilité** : Moins de 2,5 buts dans le match.")
-        elif p_v_a > 60: st.success(f"💪 **Option Sécurité** : {nom_a} ou Nul (Chance double).")
-        elif p_v_b > 60: st.success(f"💪 **Option Sécurité** : {nom_b} ou Nul (Chance double).")
-        elif p_nul > 38: st.success("🔒 **Option Sécurité Tactique** : Jouer une Chance Double (1X ou X2) ou 'Moins de 2,5 buts' car le profil tend fortement vers un score de parité.")
-        elif (buts_attendus_a + buts_attendus_b) > 2.8: st.success("🔥 **Option Buts** : Plus de 1,5 buts dans le match.")
-        else: st.success("🔒 **Option Sécurité** : Moins de 3,5 buts dans le match.")
+    if style_a == "Autobus / Bloc Bas" and style_b == "Autobus / Bloc Bas":
+        st.success("🔒 **Cadre Vert** : Option 'Moins de 2,5 buts' dans le match.")
+    elif p_v_a > 58: 
+        st.success(f"💪 **Cadre Vert** : Chance Double ({nom_a_api} ou Nul) ou Victoire Remboursée si Nul.")
+    elif p_v_b > 58: 
+        st.success(f"💪 **Cadre Vert** : Chance Double ({nom_b_api} ou Nul) ou Victoire Remboursée si Nul.")
+    elif (buts_attendus_a + buts_attendus_b) > 2.7: 
+        st.success("🔥 **Cadre Vert** : Option Spectacle - 'Plus de 1,5 buts' au total.")
+    else: 
+        st.success("🔒 **Cadre Vert** : Option Prudente - 'Moins de 3,5 buts' dans le match.")
 
 st.markdown("---")
-st.caption("FPD Pro v3.3 - Version Ultime avec matrice 1N2 équilibrée.")
+st.caption("FPD Pro v4.1 - Base hybride Football-Data.org & Mode Manuel Libéré.")
+    
