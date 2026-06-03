@@ -10,8 +10,8 @@ st.set_page_config(page_title="FPD Pro - Expert Predictor", page_icon="📊", la
 API_TOKEN = "bb42361060ff481499fe8538f511115a"
 headers = {"X-Auth-Token": API_TOKEN}
 
-st.title("📊 FPD Pro v6.1 : Multi-Sports & Intelligence H2H")
-st.caption("Suivi d'historique, calcul affiné et détection auto des surfaces Tennis")
+st.title("📊 FPD Pro v6.2 : Multi-Sports & Intelligence Tournois")
+st.caption("Sélection automatique de la surface par Tournoi et Profils Joueurs")
 
 # Initialisation de l'historique dans la session de l'utilisateur
 if "historique_paris" not in st.session_state:
@@ -20,10 +20,32 @@ if "historique_paris" not in st.session_state:
 # Onglets principaux
 sport = st.sidebar.radio("🗂️ Sélectionne le Sport", ["Football ⚽", "Tennis 🎾"])
 
-# Dictionnaire des spécialités de surface des joueurs (Tennis)
-# Permet de cocher automatiquement l'excellence selon la surface choisie
+# Dictionnaire des Tournois Majeurs et leurs surfaces associées
+DICTIONNAIRE_TOURNOIS = {
+    "🇦🇺 Open d'Australie (Grand Chelem)": "Dur / Indoor 🟦",
+    "🇫🇷 Roland-Garros (Grand Chelem)": "Terre Battue 🟫",
+    "🇬🇧 Wimbledon (Grand Chelem)": "Gazon 🟩",
+    "🇺🇸 US Open (Grand Chelem)": "Dur / Indoor 🟦",
+    "🇺🇸 Indian Wells (Masters 1000)": "Dur / Indoor 🟦",
+    "🇺🇸 Miami Open (Masters 1000)": "Dur / Indoor 🟦",
+    "🇲🇨 Monte-Carlo (Masters 1000)": "Terre Battue 🟫",
+    "🇪🇸 Madrid Open (Masters 1000)": "Terre Battue 🟫",
+    "🇮🇹 Rome Open (Masters 1000)": "Terre Battue 🟫",
+    "🇨🇦 Masters du Canada (Montréal/Toronto)": "Dur / Indoor 🟦",
+    "🇺🇸 Cincinnati (Masters 1000)": "Dur / Indoor 🟦",
+    "🇨🇳 Shanghai (Masters 1000)": "Dur / Indoor 🟦",
+    "🇫🇷 Paris-Bercy (Masters 1000)": "Dur / Indoor 🟦",
+    "🇮🇹 ATP Finals / Masters Turin": "Dur / Indoor 🟦",
+    "🇪🇸 Barcelone (ATP 500)": "Terre Battue 🟫",
+    "🇬🇧 Queen's Club (ATP 500)": "Gazon 🟩",
+    "🇩🇪 Halle Open (ATP 500)": "Gazon 🟩",
+    "➕ [Autre Tournoi] Dur Extérieur / Indoor": "Dur / Indoor 🟦",
+    "➕ [Autre Tournoi] Terre Battue": "Terre Battue 🟫",
+    "➕ [Autre Tournoi] Gazon / Herbe": "Gazon 🟩"
+}
+
+# Dictionnaire des spécialités de surface des joueurs
 DICTIONNAIRE_SURFACES = {
-    # Spécialistes de la Terre Battue
     "flavio cobolli": ["Terre Battue 🟫"],
     "carlos alcaraz": ["Terre Battue 🟫", "Dur / Indoor 🟦"],
     "rafael nadal": ["Terre Battue 🟫"],
@@ -31,8 +53,6 @@ DICTIONNAIRE_SURFACES = {
     "stefanos tsitsipas": ["Terre Battue 🟫"],
     "iga swiatek": ["Terre Battue 🟫"],
     "holger rune": ["Terre Battue 🟫"],
-    
-    # Spécialistes du Dur / Indoor
     "daniil medvedev": ["Dur / Indoor 🟦"],
     "jannik sinner": ["Dur / Indoor 🟦", "Gazon 🟩"],
     "novak djokovic": ["Dur / Indoor 🟦", "Gazon 🟩"],
@@ -47,32 +67,23 @@ DICTIONNAIRE_SURFACES = {
 }
 
 def verifier_excellence(nom_joueur, surface_choisie):
-    """Vérifie si la surface choisie fait partie des surfaces de prédilection du joueur"""
     nom_clean = nom_joueur.strip().lower()
     if nom_clean in DICTIONNAIRE_SURFACES:
         return surface_choisie in DICTIONNAIRE_SURFACES[nom_clean]
     return False
 
 # ==============================================================================
-# LE MODULE FOOTBALL (RESTE INCHANGÉ ET STABLE)
+# MODULE FOOTBALL (STABLE)
 # ==============================================================================
 if sport == "Football ⚽":
     st.header("⚽ Analyse Football & Confrontations Directes")
-    
     DICT_COMPETS = {
-        "Ligue des Champions (Europe)": "CL",
-        "Coupe du Monde (FIFA)": "WC",
-        "Championnat d'Europe (Euro)": "EC",
-        "Premier League (Angleterre)": "PL",
-        "Ligue 1 (France)": "FL1",
-        "La Liga (Espagne)": "PD",
-        "Serie A (Italie)": "SA",
-        "Bundesliga (Allemagne)": "BL1",
-        "Eredivisie (Pays-Bas)": "DED",
-        "Primeira Liga (Portugal)": "PPL",
+        "Ligue des Champions (Europe)": "CL", "Coupe du Monde (FIFA)": "WC",
+        "Championnat d'Europe (Euro)": "EC", "Premier League (Angleterre)": "PL",
+        "Ligue 1 (France)": "FL1", "La Liga (Espagne)": "PD", "Serie A (Italie)": "SA",
+        "Bundesliga (Allemagne)": "BL1", "Eredivisie (Pays-Bas)": "DED", "Primeira Liga (Portugal)": "PPL",
         "➕ [MODE MANUEL] Match Amical / Autre Coupe": "MANUAL"
     }
-
     compet_choisie = st.selectbox("Sélectionne une compétition ou un mode", list(DICT_COMPETS.keys()))
     code_compet = DICT_COMPETS[compet_choisie]
 
@@ -82,13 +93,11 @@ if sport == "Football ⚽":
         url = f"https://api.football-data.org/v4/competitions/{code}/matches?status=SCHEDULED"
         try:
             response = requests.get(url, headers=headers)
-            if response.status_code == 200:
-                return response.json().get("matches", [])
+            if response.status_code == 200: return response.json().get("matches", [])
         except: pass
         return []
 
     matchs = charger_matchs(code_compet)
-
     if code_compet == "MANUAL" or not matchs:
         mode_manuel = True
         col_input1, col_input2 = st.columns(2)
@@ -107,7 +116,6 @@ if sport == "Football ⚽":
             label = f"[{date_str}] {m['homeTeam']['name']} vs {m['awayTeam']['name']}"
             liste_options_matchs.append(label)
             dict_matchs[label] = m
-
         match_selectionne = st.selectbox("Sélectionne le match à analyser", liste_options_matchs)
         match_data = dict_matchs[match_selectionne]
         nom_a_api = match_data["homeTeam"]["name"]
@@ -169,9 +177,8 @@ if sport == "Football ⚽":
     
     total_duels = h2h_v_a + h2h_nuls + h2h_v_b
     if total_duels > 0:
-        if h2h_v_a > h2h_v_b: st.info(f"👑 **Ascendant Psychologique** : {nom_a_api} est plus décisif historiquement.")
-        elif h2h_v_b > h2h_v_a: st.info(f"👑 **Ascendant Psychologique** : {nom_b_api} est plus décisif historiquement.")
-        else: st.info("⚖️ **H2H Équilibré** : Aucune équipe ne prend le dessus.")
+        if h2h_v_a > h2h_v_b: st.info(f"👑 **Ascendant Psychologique** : {nom_a_api} est plus décisif.")
+        elif h2h_v_b > h2h_v_a: st.info(f"👑 **Ascendant Psychologique** : {nom_b_api} est plus décisif.")
 
     st.markdown("---")
     st.subheader("💰 Cotes Réelles Bet261")
@@ -244,24 +251,27 @@ if sport == "Football ⚽":
         })
 
 # ==============================================================================
-# LE MODULE TENNIS INTÉLLIGENT (DÉTECTION DE SURFACE AUTOMATIQUE)
+# MODULE TENNIS ULTRA AUTOMATISÉ (TOURNOIS + SURFACES ACCORDÉES)
 # ==============================================================================
 elif sport == "Tennis 🎾":
-    st.header("🎾 Analyse Tennis Intelligence Surface")
+    st.header("🎾 Module Tennis Connecté aux Tournois")
     
-    st.subheader("🟩 1. Terrain")
-    surface = st.selectbox("Type de Surface de Court", ["Dur / Indoor 🟦", "Terre Battue 🟫", "Gazon 🟩"])
+    st.subheader("🏆 1. Sélection du Tournoi")
+    tournoi_selectionne = st.selectbox("Où se joue le match ?", list(DICTIONNAIRE_TOURNOIS.keys()))
+    
+    # Extraction automatique de la surface d'après le tournoi choisi
+    surface = DICTIONNAIRE_TOURNOIS[tournoi_selectionne]
+    st.info(f"🏟️ Type de court détecté : **{surface}**")
 
     st.subheader("👤 2. Profil des Joueurs")
     tx1, tx2 = st.columns(2)
     joueur_1 = tx1.text_input("Nom du Joueur 1", "Flavio Cobolli")
     joueur_2 = tx2.text_input("Nom du Joueur 2", "Felix Auger Aliassime")
 
-    # Liens d'aide
     nom_recherche = f"{joueur_1} {joueur_2}".replace(" ", "+")
-    st.markdown(f"🔗 [⚡ CLIQUE ICI : Voir les stats de forme sur Flashscore](https://www.google.com/search?q=flashscore+tennis+{nom_recherche}+h2h)")
+    st.markdown(f"🔗 [⚡ CLIQUE ICI : Voir les formes récentes de ces joueurs sur Flashscore](https://www.google.com/search?q=flashscore+tennis+{nom_recherche}+h2h)")
 
-    # Détermination automatique de la surface préférée
+    # Détermination croisée (Tournoi automatique -> Surface -> Spécialité Joueur)
     auto_pref_j1 = verifier_excellence(joueur_1, surface)
     auto_pref_j2 = verifier_excellence(joueur_2, surface)
 
@@ -270,13 +280,12 @@ elif sport == "Tennis 🎾":
     col_t1, col_t2 = st.columns(2)
     
     victoires_j1 = col_t1.number_input(f"Victoires de {joueur_1} (sur les 10 derniers)", min_value=0, max_value=10, value=6)
-    # Le switch prend la valeur calculée automatiquement mais reste modifiable manuellement !
-    pref_j1 = col_t1.toggle(f"{joueur_1} excelle sur cette surface", value=auto_pref_j1)
-    if auto_pref_j1: col_t1.caption("✨ *Profil détecté automatiquement !*")
+    pref_j1 = col_t1.toggle(f"{joueur_1} excelle sur ce terrain", value=auto_pref_j1)
+    if auto_pref_j1: col_t1.caption("✨ *Boost de surface activé automatiquement !*")
     
     victoires_j2 = col_t2.number_input(f"Victoires de {joueur_2} (sur les 10 derniers)", min_value=0, max_value=10, value=6)
-    pref_j2 = col_t2.toggle(f"{joueur_2} excelle sur cette surface", value=auto_pref_j2)
-    if auto_pref_j2: col_t2.caption("✨ *Profil détecté automatiquement !*")
+    pref_j2 = col_t2.toggle(f"{joueur_2} excelle sur ce terrain", value=auto_pref_j2)
+    if auto_pref_j2: col_t2.caption("✨ *Boost de surface activé automatiquement !*")
 
     st.markdown("---")
     st.subheader("💰 4. Cotes Réelles Bet261")
@@ -316,7 +325,7 @@ elif sport == "Tennis 🎾":
         st.success(f"🟩 **Cadre Vert** : {cadre_tennis}")
         
         st.session_state.historique_paris.append({
-            "Sport": "Tennis 🎾", "Match / Duel": f"{joueur_1} vs {joueur_2}",
+            "Sport": f"Tennis 🎾 ({tournoi_selectionne.split()[1]})", "Match / Duel": f"{joueur_1} vs {joueur_2}",
             "Cadre Vert": cadre_tennis, "Cotes": f"{cote_j1:.2f} | {cote_j2:.2f}"
         })
 
