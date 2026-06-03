@@ -10,8 +10,8 @@ st.set_page_config(page_title="FPD Pro - Expert Predictor", page_icon="📊", la
 API_TOKEN = "bb42361060ff481499fe8538f511115a"
 headers = {"X-Auth-Token": API_TOKEN}
 
-st.title("📊 FPD Pro v6.0 : Multi-Sports & Intelligence H2H")
-st.caption("Suivi d'historique, calcul des nuls affiné et confrontations directes")
+st.title("📊 FPD Pro v6.1 : Multi-Sports & Intelligence H2H")
+st.caption("Suivi d'historique, calcul affiné et détection auto des surfaces Tennis")
 
 # Initialisation de l'historique dans la session de l'utilisateur
 if "historique_paris" not in st.session_state:
@@ -20,8 +20,41 @@ if "historique_paris" not in st.session_state:
 # Onglets principaux
 sport = st.sidebar.radio("🗂️ Sélectionne le Sport", ["Football ⚽", "Tennis 🎾"])
 
+# Dictionnaire des spécialités de surface des joueurs (Tennis)
+# Permet de cocher automatiquement l'excellence selon la surface choisie
+DICTIONNAIRE_SURFACES = {
+    # Spécialistes de la Terre Battue
+    "flavio cobolli": ["Terre Battue 🟫"],
+    "carlos alcaraz": ["Terre Battue 🟫", "Dur / Indoor 🟦"],
+    "rafael nadal": ["Terre Battue 🟫"],
+    "casper ruud": ["Terre Battue 🟫"],
+    "stefanos tsitsipas": ["Terre Battue 🟫"],
+    "iga swiatek": ["Terre Battue 🟫"],
+    "holger rune": ["Terre Battue 🟫"],
+    
+    # Spécialistes du Dur / Indoor
+    "daniil medvedev": ["Dur / Indoor 🟦"],
+    "jannik sinner": ["Dur / Indoor 🟦", "Gazon 🟩"],
+    "novak djokovic": ["Dur / Indoor 🟦", "Gazon 🟩"],
+    "alexander zverev": ["Dur / Indoor 🟦", "Terre Battue 🟫"],
+    "felix auger-aliassime": ["Dur / Indoor 🟦"],
+    "felix auger aliassime": ["Dur / Indoor 🟦"],
+    "aryna sabalenka": ["Dur / Indoor 🟦"],
+    "taylor fritz": ["Dur / Indoor 🟦"],
+    "andrey rublev": ["Dur / Indoor 🟦"],
+    "alex de minaur": ["Dur / Indoor 🟦", "Gazon 🟩"],
+    "hubert hurkacz": ["Dur / Indoor 🟦", "Gazon 🟩"],
+}
+
+def verifier_excellence(nom_joueur, surface_choisie):
+    """Vérifie si la surface choisie fait partie des surfaces de prédilection du joueur"""
+    nom_clean = nom_joueur.strip().lower()
+    if nom_clean in DICTIONNAIRE_SURFACES:
+        return surface_choisie in DICTIONNAIRE_SURFACES[nom_clean]
+    return False
+
 # ==============================================================================
-# LE MODULE FOOTBALL (INTELLIGENT & H2H)
+# LE MODULE FOOTBALL (RESTE INCHANGÉ ET STABLE)
 # ==============================================================================
 if sport == "Football ⚽":
     st.header("⚽ Analyse Football & Confrontations Directes")
@@ -127,21 +160,18 @@ if sport == "Football ⚽":
         v_b_input = st.number_input("Victoires (5 derniers)", value=int(v_b_auto), min_value=0, max_value=5, key="vb")
         n_b_input = st.number_input("Nuls (5 derniers)", value=int(n_b_auto), min_value=0, max_value=5, key="nb")
 
-    # NOUVEAU : SOUS-SECTION CONFRONTATIONS DIRECTES (H2H)
     st.markdown("---")
     st.subheader("🔄 3. Historique Confrontations Directes (H2H)")
-    st.caption("Entrez les résultats de leurs face-à-face récents (ex: les 5 derniers duels)")
     cx_h2h1, cx_h2h2, cx_h2h3 = st.columns(3)
     h2h_v_a = cx_h2h1.number_input(f"Duels gagnés par {nom_a_api}", min_value=0, value=1)
     h2h_nuls = cx_h2h2.number_input("Matchs nuls entre eux", min_value=0, value=2)
     h2h_v_b = cx_h2h3.number_input(f"Duels gagnés par {nom_b_api}", min_value=0, value=1)
     
-    # Indicateur visuel de décision
     total_duels = h2h_v_a + h2h_nuls + h2h_v_b
     if total_duels > 0:
-        if h2h_v_a > h2h_v_b: st.info(f"👑 **Ascendant Psychologique** : {nom_a_api} est plus décisif historiquement ({h2h_v_a}V vs {h2h_v_b}V).")
-        elif h2h_v_b > h2h_v_a: st.info(f"👑 **Ascendant Psychologique** : {nom_b_api} est plus décisif historiquement ({h2h_v_b}V vs {h2h_v_a}V).")
-        else: st.info("⚖️ **H2H Équilibré** : Aucune équipe ne prend le dessus sur l'autre historiquement.")
+        if h2h_v_a > h2h_v_b: st.info(f"👑 **Ascendant Psychologique** : {nom_a_api} est plus décisif historiquement.")
+        elif h2h_v_b > h2h_v_a: st.info(f"👑 **Ascendant Psychologique** : {nom_b_api} est plus décisif historiquement.")
+        else: st.info("⚖️ **H2H Équilibré** : Aucune équipe ne prend le dessus.")
 
     st.markdown("---")
     st.subheader("💰 Cotes Réelles Bet261")
@@ -153,20 +183,16 @@ if sport == "Football ⚽":
     if st.button("📊 LANCER L'ANALYSE FOOTBALL", use_container_width=True):
         d_a_input = max(0, 5 - v_a_input - n_a_input)
         d_b_input = max(0, 5 - v_b_input - n_b_input)
-        
         att_a, def_a = buts_marques_a / 5, buts_encaisses_a / 5
         att_b, def_b = buts_marques_b / 5, buts_encaisses_b / 5
-        
         att_a *= (1.0 + (v_a_input * 0.05) - (d_a_input * 0.05))
         att_b *= (1.0 + (v_b_input * 0.05) - (d_b_input * 0.05))
         
-        # 1. Impact du classement général
         if rang_a > 0 and rang_b > 0:
             ecart = rang_b - rang_a
             if ecart > 4: att_a *= 1.08; def_b *= 1.05
             elif ecart < -4: att_b *= 1.08; def_a *= 1.05
         
-        # 2. Styles tactiques
         if style_b == "Autobus / Bloc Bas": att_a *= 0.70; def_b *= 0.80
         if style_a == "Autobus / Bloc Bas": att_b *= 0.70; def_a *= 0.80
         if style_a == "Ultra-Offensif": att_a *= 1.25; def_a *= 1.20
@@ -190,17 +216,11 @@ if sport == "Football ⚽":
         total = v_a + nul + v_b
         p_v_a, p_nul, p_v_b = (v_a / total) * 100, (nul / total) * 100, (v_b / total) * 100
         
-        # 3. AFFINAGE DU MATCH NUL & INFLUENCE H2H
-        # Boost des nuls s'ils font souvent nul
         if total_duels > 0:
-            ratio_nuls_h2h = h2h_nuls / total_duels
-            if ratio_nuls_h2h > 0.40: p_nul += 7.5 # Gros bonus de tendance nulle
-            
-            # Boost décisionnel H2H
+            if (h2h_nuls / total_duels) > 0.40: p_nul += 7.5
             if h2h_v_a > h2h_v_b: p_v_a += 5.0
             elif h2h_v_b > h2h_v_a: p_v_b += 5.0
 
-        # Réajustement sur base 100
         total_ajuste = p_v_a + p_nul + p_v_b
         p_v_a, p_nul, p_v_b = (p_v_a/total_ajuste)*100, (p_nul/total_ajuste)*100, (p_v_b/total_ajuste)*100
 
@@ -210,7 +230,6 @@ if sport == "Football ⚽":
         c2.metric("Match Nul", f"{p_nul:.1f}%")
         c3.metric(f"Victoire {nom_b_api}", f"{p_v_b:.1f}%")
         
-        # Détection Cadre Vert
         st.subheader("🛡️ Option Sécurité FPD Pro (Mise : 5%)")
         cadre_vert = ""
         if p_v_a > 58: cadre_vert = f"Double Chance 1X ({nom_a_api} ou Nul)"
@@ -219,46 +238,51 @@ if sport == "Football ⚽":
         else: cadre_vert = "Moins de 3,5 buts dans le match"
         st.success(f"💪 **Cadre Vert** : {cadre_vert}")
         
-        # Sauvegarde dans l'Historique
         st.session_state.historique_paris.append({
-            "Sport": "Football ⚽",
-            "Match / Duel": f"{nom_a_api} vs {nom_b_api}",
-            "Cadre Vert": cadre_vert,
-            "Cotes": f"{cote_a:.2f} | {cote_nul:.2f} | {cote_b:.2f}"
+            "Sport": "Football ⚽", "Match / Duel": f"{nom_a_api} vs {nom_b_api}",
+            "Cadre Vert": cadre_vert, "Cotes": f"{cote_a:.2f} | {cote_nul:.2f} | {cote_b:.2f}"
         })
 
 # ==============================================================================
-# LE MODULE TENNIS (AUTOMATISATION DES STATS VIA LIENS RAPIDES)
+# LE MODULE TENNIS INTÉLLIGENT (DÉTECTION DE SURFACE AUTOMATIQUE)
 # ==============================================================================
 elif sport == "Tennis 🎾":
-    st.header("🎾 Analyse Tennis & Liens Automatiques")
-    st.info("💡 Saisissez le nom des joueurs pour débloquer le raccourci d'automatisation des statistiques.")
-
-    st.subheader("👤 1. Profil des Joueurs")
-    tx1, tx2 = st.columns(2)
-    joueur_1 = tx1.text_input("Nom du Joueur 1", "Menšik Jakub")
-    joueur_2 = tx2.text_input("Nom du Joueur 2", "Fonseca Joao")
-
-    # Raccourci d'automatisation intelligente
-    nom_recherche = f"{joueur_1} {joueur_2}".replace(" ", "+")
-    st.markdown(f"🔗 [⚡ CLIQUE ICI : Voir instantanément la forme et le H2H de ces joueurs sur Flashscore](https://www.google.com/search?q=flashscore+tennis+{nom_recherche}+h2h)")
-
-    st.markdown("---")
-    st.subheader("📊 2. Forme Récente & Terrain (Ajusté via le lien)")
+    st.header("🎾 Analyse Tennis Intelligence Surface")
+    
+    st.subheader("🟩 1. Terrain")
     surface = st.selectbox("Type de Surface de Court", ["Dur / Indoor 🟦", "Terre Battue 🟫", "Gazon 🟩"])
-    
-    col_t1, col_t2 = st.columns(2)
-    victoires_j1 = col_t1.number_input(f"Victoires de {joueur_1} (sur les 10 derniers)", min_value=0, max_value=10, value=6)
-    victoires_j2 = col_t2.number_input(f"Victoires de {joueur_2} (sur les 10 derniers)", min_value=0, max_value=10, value=7)
-    
-    pref_j1 = col_t1.toggle(f"{joueur_1} excelle sur cette surface", value=False)
-    pref_j2 = col_t2.toggle(f"{joueur_2} excelle sur cette surface", value=True)
+
+    st.subheader("👤 2. Profil des Joueurs")
+    tx1, tx2 = st.columns(2)
+    joueur_1 = tx1.text_input("Nom du Joueur 1", "Flavio Cobolli")
+    joueur_2 = tx2.text_input("Nom du Joueur 2", "Felix Auger Aliassime")
+
+    # Liens d'aide
+    nom_recherche = f"{joueur_1} {joueur_2}".replace(" ", "+")
+    st.markdown(f"🔗 [⚡ CLIQUE ICI : Voir les stats de forme sur Flashscore](https://www.google.com/search?q=flashscore+tennis+{nom_recherche}+h2h)")
+
+    # Détermination automatique de la surface préférée
+    auto_pref_j1 = verifier_excellence(joueur_1, surface)
+    auto_pref_j2 = verifier_excellence(joueur_2, surface)
 
     st.markdown("---")
-    st.subheader("💰 3. Cotes Réelles Bet261")
+    st.subheader("📊 3. Forme Récente & Terrain")
+    col_t1, col_t2 = st.columns(2)
+    
+    victoires_j1 = col_t1.number_input(f"Victoires de {joueur_1} (sur les 10 derniers)", min_value=0, max_value=10, value=6)
+    # Le switch prend la valeur calculée automatiquement mais reste modifiable manuellement !
+    pref_j1 = col_t1.toggle(f"{joueur_1} excelle sur cette surface", value=auto_pref_j1)
+    if auto_pref_j1: col_t1.caption("✨ *Profil détecté automatiquement !*")
+    
+    victoires_j2 = col_t2.number_input(f"Victoires de {joueur_2} (sur les 10 derniers)", min_value=0, max_value=10, value=6)
+    pref_j2 = col_t2.toggle(f"{joueur_2} excelle sur cette surface", value=auto_pref_j2)
+    if auto_pref_j2: col_t2.caption("✨ *Profil détecté automatiquement !*")
+
+    st.markdown("---")
+    st.subheader("💰 4. Cotes Réelles Bet261")
     cx_t1, cx_t2 = st.columns(2)
-    cote_j1 = cx_t1.number_input(f"Cote {joueur_1}", min_value=1.01, value=1.95, step=0.05)
-    cote_j2 = cx_t2.number_input(f"Cote {joueur_2}", min_value=1.01, value=1.85, step=0.05)
+    cote_j1 = cx_t1.number_input(f"Cote {joueur_1}", min_value=1.01, value=1.80, step=0.05)
+    cote_j2 = cx_t2.number_input(f"Cote {joueur_2}", min_value=1.01, value=2.00, step=0.05)
 
     if st.button("📊 LANCER L'ANALYSE TENNIS", use_container_width=True):
         score_j1 = victoires_j1 * 10
@@ -291,16 +315,13 @@ elif sport == "Tennis 🎾":
         st.subheader("🛡️ Option Sécurité Tennis (Mise : 5%)")
         st.success(f"🟩 **Cadre Vert** : {cadre_tennis}")
         
-        # Sauvegarde dans l'Historique
         st.session_state.historique_paris.append({
-            "Sport": "Tennis 🎾",
-            "Match / Duel": f"{joueur_1} vs {joueur_2}",
-            "Cadre Vert": cadre_tennis,
-            "Cotes": f"{cote_j1:.2f} | {cote_j2:.2f}"
+            "Sport": "Tennis 🎾", "Match / Duel": f"{joueur_1} vs {joueur_2}",
+            "Cadre Vert": cadre_tennis, "Cotes": f"{cote_j1:.2f} | {cote_j2:.2f}"
         })
 
 # ==============================================================================
-# NOUVEAU VISUEL : SECTION HISTORIQUE DES ANALYSES (PAR TOUT SPORT)
+# SECTION HISTORIQUE DES ANALYSES
 # ==============================================================================
 st.markdown("---")
 st.header("🗂️ Journal d'Historique des Analyses")
@@ -310,5 +331,5 @@ if st.session_state.historique_paris:
         st.session_state.historique_paris = []
         st.rerun()
 else:
-    st.info("💡 Aucune analyse enregistrée pour le moment. Lancez un calcul pour tester l'historique.")
+    st.info("💡 Aucune analyse enregistrée pour le moment.")
         
