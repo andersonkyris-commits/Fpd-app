@@ -4,25 +4,28 @@ import math
 from datetime import datetime
 
 # Configuration de la page
-st.set_page_config(page_title="FPD Pro - Multi-Sports Predictor", page_icon="📊", layout="centered")
+st.set_page_config(page_title="FPD Pro - Expert Predictor", page_icon="📊", layout="centered")
 
-# Clé API Football-Data.org intégrée
+# Clé API Football-Data.org
 API_TOKEN = "bb42361060ff481499fe8538f511115a"
 headers = {"X-Auth-Token": API_TOKEN}
 
-st.title("📊 FPD Pro v5.2 : Football & Tennis Predictor")
-st.caption("Prise en compte dynamique du classement général")
+st.title("📊 FPD Pro v6.0 : Multi-Sports & Intelligence H2H")
+st.caption("Suivi d'historique, calcul des nuls affiné et confrontations directes")
 
-# Onglets principaux pour choisir le sport
+# Initialisation de l'historique dans la session de l'utilisateur
+if "historique_paris" not in st.session_state:
+    st.session_state.historique_paris = []
+
+# Onglets principaux
 sport = st.sidebar.radio("🗂️ Sélectionne le Sport", ["Football ⚽", "Tennis 🎾"])
 
 # ==============================================================================
-# LE MODULE FOOTBALL (AVEC BONUS DE CLASSEMENT INTÉGRÉ)
+# LE MODULE FOOTBALL (INTELLIGENT & H2H)
 # ==============================================================================
 if sport == "Football ⚽":
-    st.header("⚽ Analyse Football")
+    st.header("⚽ Analyse Football & Confrontations Directes")
     
-    # 1. SÉLECTION DE LA COMPÉTITION
     DICT_COMPETS = {
         "Ligue des Champions (Europe)": "CL",
         "Coupe du Monde (FIFA)": "WC",
@@ -54,8 +57,6 @@ if sport == "Football ⚽":
     matchs = charger_matchs(code_compet)
 
     if code_compet == "MANUAL" or not matchs:
-        if code_compet != "MANUAL":
-            st.warning("⚠️ Aucun match trouvé sur l'API. Passage en mode manuel.")
         mode_manuel = True
         col_input1, col_input2 = st.columns(2)
         nom_a_api = col_input1.text_input("Nom de l'Équipe à Domicile", "Équipe A")
@@ -83,7 +84,6 @@ if sport == "Football ⚽":
     st.subheader("📊 Paramètres & Données des Équipes")
     col1, col2 = st.columns(2)
 
-    # Récupération enrichie incluant le rang au classement
     @st.cache_data(ttl=7200)
     def recuperer_stats_et_classement(code_league, team_name):
         if code_league == "MANUAL": return 7, 5, 2, 2, 0
@@ -98,19 +98,11 @@ if sport == "Football ⚽":
                         if row["team"]["name"] == team_name:
                             matchs_joues = row["playedGames"] if row["playedGames"] > 0 else 1
                             ratio = 5 / matchs_joues
-                            rank = row["position"]
-                            return (
-                                max(1, round(row["goalsFor"] * ratio)), 
-                                max(1, round(row["goalsAgainst"] * ratio)), 
-                                max(0, min(5, round(row["won"] * ratio))), 
-                                max(0, min(5, round(row["draw"] * ratio))),
-                                rank
-                            )
+                            return max(1, round(row["goalsFor"] * ratio)), max(1, round(row["goalsAgainst"] * ratio)), max(0, min(5, round(row["won"] * ratio))), max(0, min(5, round(row["draw"] * ratio))), row["position"]
         except: pass
         return 7, 5, 2, 2, 0
 
     if not mode_manuel:
-        st.success(f"🔄 Données et classements en direct récupérés !")
         bm_a_auto, be_a_auto, v_a_auto, n_a_auto, rang_a = recuperer_stats_et_classement(code_compet, nom_a_api)
         bm_b_auto, be_b_auto, v_b_auto, n_b_auto, rang_b = recuperer_stats_et_classement(code_compet, nom_b_api)
     else:
@@ -119,35 +111,37 @@ if sport == "Football ⚽":
 
     with col1:
         st.subheader(f"🛡️ {nom_a_api}")
-        if rang_a > 0:
-            st.markdown(f"🏆 Classement actuel : **{rang_a}e**")
-        else:
-            rang_a_in = st.number_input(f"Position Classement {nom_a_api} (Optionnel)", min_value=0, value=0, key="ra")
-            rang_a = rang_a_in if rang_a_in > 0 else 0
-            
+        if rang_a > 0: st.markdown(f"🏆 Classement : **{rang_a}e**")
         style_a = st.selectbox(f"Style Tactique ({nom_a_api})", ["Équilibré", "Ultra-Offensif", "Autobus / Bloc Bas"], key="sa")
-        buts_marques_a = st.number_input("Buts marqués (sur 5 matchs)", value=int(bm_a_auto), min_value=0, key="bma")
-        buts_encaisses_a = st.number_input("Buts encaissés (sur 5 matchs)", value=int(be_a_auto), min_value=0, key="bea")
-        v_a_input = st.number_input("Victoires (sur 5 matchs)", value=int(v_a_auto), min_value=0, max_value=5, key="va")
-        n_a_input = st.number_input("Nuls (sur 5 matchs)", value=int(n_a_auto), min_value=0, max_value=5, key="na")
-        d_a_input = max(0, 5 - v_a_input - n_a_input)
-        st.caption(f"Défaites estimées : {d_a_input}")
+        buts_marques_a = st.number_input("Buts marqués (5 derniers matchs)", value=int(bm_a_auto), min_value=0, key="bma")
+        buts_encaisses_a = st.number_input("Buts encaissés (5 derniers matchs)", value=int(be_a_auto), min_value=0, key="bea")
+        v_a_input = st.number_input("Victoires (5 derniers)", value=int(v_a_auto), min_value=0, max_value=5, key="va")
+        n_a_input = st.number_input("Nuls (5 derniers)", value=int(n_a_auto), min_value=0, max_value=5, key="na")
 
     with col2:
         st.subheader(f"⚔️ {nom_b_api}")
-        if rang_b > 0:
-            st.markdown(f"🏆 Classement actuel : **{rang_b}e**")
-        else:
-            rang_b_in = st.number_input(f"Position Classement {nom_b_api} (Optionnel)", min_value=0, value=0, key="rb")
-            rang_b = rang_b_in if rang_b_in > 0 else 0
-            
+        if rang_b > 0: st.markdown(f"🏆 Classement : **{rang_b}e**")
         style_b = st.selectbox(f"Style Tactique ({nom_b_api})", ["Équilibré", "Ultra-Offensif", "Autobus / Bloc Bas"], key="sb")
-        buts_marques_b = st.number_input("Buts marqués (sur 5 matchs)", value=int(bm_b_auto), min_value=0, key="bmb")
-        buts_encaisses_b = st.number_input("Buts encaissés (sur 5 matchs)", value=int(be_b_auto), min_value=0, key="beb")
-        v_b_input = st.number_input("Victoires (sur 5 matchs)", value=int(v_b_auto), min_value=0, max_value=5, key="vb")
-        n_b_input = st.number_input("Nuls (sur 5 matchs)", value=int(n_b_auto), min_value=0, max_value=5, key="nb")
-        d_b_input = max(0, 5 - v_b_input - n_b_input)
-        st.caption(f"Défaites estimées : {d_b_input}")
+        buts_marques_b = st.number_input("Buts marqués (5 derniers matchs)", value=int(bm_b_auto), min_value=0, key="bmb")
+        buts_encaisses_b = st.number_input("Buts encaissés (5 derniers matchs)", value=int(be_b_auto), min_value=0, key="beb")
+        v_b_input = st.number_input("Victoires (5 derniers)", value=int(v_b_auto), min_value=0, max_value=5, key="vb")
+        n_b_input = st.number_input("Nuls (5 derniers)", value=int(n_b_auto), min_value=0, max_value=5, key="nb")
+
+    # NOUVEAU : SOUS-SECTION CONFRONTATIONS DIRECTES (H2H)
+    st.markdown("---")
+    st.subheader("🔄 3. Historique Confrontations Directes (H2H)")
+    st.caption("Entrez les résultats de leurs face-à-face récents (ex: les 5 derniers duels)")
+    cx_h2h1, cx_h2h2, cx_h2h3 = st.columns(3)
+    h2h_v_a = cx_h2h1.number_input(f"Duels gagnés par {nom_a_api}", min_value=0, value=1)
+    h2h_nuls = cx_h2h2.number_input("Matchs nuls entre eux", min_value=0, value=2)
+    h2h_v_b = cx_h2h3.number_input(f"Duels gagnés par {nom_b_api}", min_value=0, value=1)
+    
+    # Indicateur visuel de décision
+    total_duels = h2h_v_a + h2h_nuls + h2h_v_b
+    if total_duels > 0:
+        if h2h_v_a > h2h_v_b: st.info(f"👑 **Ascendant Psychologique** : {nom_a_api} est plus décisif historiquement ({h2h_v_a}V vs {h2h_v_b}V).")
+        elif h2h_v_b > h2h_v_a: st.info(f"👑 **Ascendant Psychologique** : {nom_b_api} est plus décisif historiquement ({h2h_v_b}V vs {h2h_v_a}V).")
+        else: st.info("⚖️ **H2H Équilibré** : Aucune équipe ne prend le dessus sur l'autre historiquement.")
 
     st.markdown("---")
     st.subheader("💰 Cotes Réelles Bet261")
@@ -157,23 +151,22 @@ if sport == "Football ⚽":
     cote_b = cx3.number_input(f"Cote {nom_b_api}", min_value=1.0, value=3.50, step=0.05)
 
     if st.button("📊 LANCER L'ANALYSE FOOTBALL", use_container_width=True):
+        d_a_input = max(0, 5 - v_a_input - n_a_input)
+        d_b_input = max(0, 5 - v_b_input - n_b_input)
+        
         att_a, def_a = buts_marques_a / 5, buts_encaisses_a / 5
         att_b, def_b = buts_marques_b / 5, buts_encaisses_b / 5
         
-        # Ajustement selon l'état de forme à court terme
         att_a *= (1.0 + (v_a_input * 0.05) - (d_a_input * 0.05))
         att_b *= (1.0 + (v_b_input * 0.05) - (d_b_input * 0.05))
         
-        # AJUSTEMENT LOGIQUE SELON L'ÉCART AU CLASSEMENT GÉNÉRAL
+        # 1. Impact du classement général
         if rang_a > 0 and rang_b > 0:
-            ecart_classement = rang_b - rang_a  # Exemple: 18e - 3e = +15 (Avantage équipe A)
-            if ecart_classement > 4:  # Équipe A nettement mieux classée
-                att_a *= 1.08
-                def_b *= 1.05
-            elif ecart_classement < -4:  # Équipe B nettement mieux classée
-                att_b *= 1.08
-                def_a *= 1.05
+            ecart = rang_b - rang_a
+            if ecart > 4: att_a *= 1.08; def_b *= 1.05
+            elif ecart < -4: att_b *= 1.08; def_a *= 1.05
         
+        # 2. Styles tactiques
         if style_b == "Autobus / Bloc Bas": att_a *= 0.70; def_b *= 0.80
         if style_a == "Autobus / Bloc Bas": att_b *= 0.70; def_a *= 0.80
         if style_a == "Ultra-Offensif": att_a *= 1.25; def_a *= 1.20
@@ -195,87 +188,127 @@ if sport == "Football ⚽":
                 else: v_b += p_score
 
         total = v_a + nul + v_b
-        p_v_a, p_nul, p_v_b = (v_a / total) * 100, ((nul / total) * 100) + ((n_a_input + n_b_input) * 2.0), (v_b / total) * 100
+        p_v_a, p_nul, p_v_b = (v_a / total) * 100, (nul / total) * 100, (v_b / total) * 100
+        
+        # 3. AFFINAGE DU MATCH NUL & INFLUENCE H2H
+        # Boost des nuls s'ils font souvent nul
+        if total_duels > 0:
+            ratio_nuls_h2h = h2h_nuls / total_duels
+            if ratio_nuls_h2h > 0.40: p_nul += 7.5 # Gros bonus de tendance nulle
+            
+            # Boost décisionnel H2H
+            if h2h_v_a > h2h_v_b: p_v_a += 5.0
+            elif h2h_v_b > h2h_v_a: p_v_b += 5.0
+
+        # Réajustement sur base 100
         total_ajuste = p_v_a + p_nul + p_v_b
         p_v_a, p_nul, p_v_b = (p_v_a/total_ajuste)*100, (p_nul/total_ajuste)*100, (p_v_b/total_ajuste)*100
 
-        st.subheader("📈 Pourcentages Calculés")
+        st.subheader("📈 Pourcentages Calculés Finalisés")
         c1, c2, c3 = st.columns(3)
         c1.metric(f"Victoire {nom_a_api}", f"{p_v_a:.1f}%")
         c2.metric("Match Nul", f"{p_nul:.1f}%")
         c3.metric(f"Victoire {nom_b_api}", f"{p_v_b:.1f}%")
         
-        st.markdown("---")
-        value_a, value_nul, value_b = (p_v_a * cote_a) / 100, (p_nul * cote_nul) / 100, (p_v_b * cote_b) / 100
-        if value_a > 1.05: st.warning(f"⚠️ Value Bet sur {nom_a_api} (Cote: {cote_a})")
-        if value_nul > 1.05: st.warning(f"⚠️ Value Bet sur Nul (Cote: {cote_nul})")
-        if value_b > 1.05: st.warning(f"⚠️ Value Bet sur {nom_b_api} (Cote: {cote_b})")
-        
+        # Détection Cadre Vert
         st.subheader("🛡️ Option Sécurité FPD Pro (Mise : 5%)")
-        if p_v_a > 58: st.success(f"💪 **Cadre Vert** : Double Chance 1X ({nom_a_api} ou Nul)")
-        elif p_v_b > 58: st.success(f"💪 **Cadre Vert** : Double Chance X2 ({nom_b_api} ou Nul)")
-        elif (buts_attendus_a + buts_attendus_b) > 2.7: st.success("🔥 **Cadre Vert** : Plus de 1,5 buts dans le match")
-        else: st.success("🔒 **Cadre Vert** : Moins de 3,5 buts dans le match")
+        cadre_vert = ""
+        if p_v_a > 58: cadre_vert = f"Double Chance 1X ({nom_a_api} ou Nul)"
+        elif p_v_b > 58: cadre_vert = f"Double Chance X2 ({nom_b_api} ou Nul)"
+        elif (buts_attendus_a + buts_attendus_b) > 2.7: cadre_vert = "Plus de 1,5 buts dans le match"
+        else: cadre_vert = "Moins de 3,5 buts dans le match"
+        st.success(f"💪 **Cadre Vert** : {cadre_vert}")
+        
+        # Sauvegarde dans l'Historique
+        st.session_state.historique_paris.append({
+            "Sport": "Football ⚽",
+            "Match / Duel": f"{nom_a_api} vs {nom_b_api}",
+            "Cadre Vert": cadre_vert,
+            "Cotes": f"{cote_a:.2f} | {cote_nul:.2f} | {cote_b:.2f}"
+        })
 
 # ==============================================================================
-# LE MODULE TENNIS
+# LE MODULE TENNIS (AUTOMATISATION DES STATS VIA LIENS RAPIDES)
 # ==============================================================================
 elif sport == "Tennis 🎾":
-    # (Le code tennis reste le même, très stable)
-    st.header("🎾 Analyse Tennis v1.0")
-    st.info("💡 Au tennis, pas de match nul ! Le modèle s'appuie sur le ratio de victoires et la surface.")
+    st.header("🎾 Analyse Tennis & Liens Automatiques")
+    st.info("💡 Saisissez le nom des joueurs pour débloquer le raccourci d'automatisation des statistiques.")
+
+    st.subheader("👤 1. Profil des Joueurs")
     tx1, tx2 = st.columns(2)
-    joueur_1 = tx1.text_input("Nom du Joueur 1", "Joueur A")
-    joueur_2 = tx2.text_input("Nom du Joueur 2", "Joueur B")
+    joueur_1 = tx1.text_input("Nom du Joueur 1", "Menšik Jakub")
+    joueur_2 = tx2.text_input("Nom du Joueur 2", "Fonseca Joao")
+
+    # Raccourci d'automatisation intelligente
+    nom_recherche = f"{joueur_1} {joueur_2}".replace(" ", "+")
+    st.markdown(f"🔗 [⚡ CLIQUE ICI : Voir instantanément la forme et le H2H de ces joueurs sur Flashscore](https://www.google.com/search?q=flashscore+tennis+{nom_recherche}+h2h)")
+
     st.markdown("---")
-    st.subheader("📊 2. Forme Récente & Terrain")
+    st.subheader("📊 2. Forme Récente & Terrain (Ajusté via le lien)")
     surface = st.selectbox("Type de Surface de Court", ["Dur / Indoor 🟦", "Terre Battue 🟫", "Gazon 🟩"])
+    
     col_t1, col_t2 = st.columns(2)
-    victoires_j1 = col_t1.number_input(f"Victoires de {joueur_1} (sur ses 10 derniers matchs)", min_value=0, max_value=10, value=6)
-    victoires_j2 = col_t2.number_input(f"Victoires de {joueur_2} (sur ses 10 derniers matchs)", min_value=0, max_value=10, value=6)
-    pref_j1 = col_t1.toggle(f"{joueur_1} adore cette surface", value=False)
-    pref_j2 = col_t2.toggle(f"{joueur_2} adore cette surface", value=False)
+    victoires_j1 = col_t1.number_input(f"Victoires de {joueur_1} (sur les 10 derniers)", min_value=0, max_value=10, value=6)
+    victoires_j2 = col_t2.number_input(f"Victoires de {joueur_2} (sur les 10 derniers)", min_value=0, max_value=10, value=7)
+    
+    pref_j1 = col_t1.toggle(f"{joueur_1} excelle sur cette surface", value=False)
+    pref_j2 = col_t2.toggle(f"{joueur_2} excelle sur cette surface", value=True)
+
     st.markdown("---")
     st.subheader("💰 3. Cotes Réelles Bet261")
     cx_t1, cx_t2 = st.columns(2)
-    cote_j1 = cx_t1.number_input(f"Cote {joueur_1}", min_value=1.01, value=1.80, step=0.05)
-    cote_j2 = cx_t2.number_input(f"Cote {joueur_2}", min_value=1.01, value=2.00, step=0.05)
+    cote_j1 = cx_t1.number_input(f"Cote {joueur_1}", min_value=1.01, value=1.95, step=0.05)
+    cote_j2 = cx_t2.number_input(f"Cote {joueur_2}", min_value=1.01, value=1.85, step=0.05)
 
     if st.button("📊 LANCER L'ANALYSE TENNIS", use_container_width=True):
         score_j1 = victoires_j1 * 10
         score_j2 = victoires_j2 * 10
         if pref_j1: score_j1 += 15
         if pref_j2: score_j2 += 15
+            
         total_scores = score_j1 + score_j2
         if total_scores == 0: total_scores = 1
+        
         prob_j1 = (score_j1 / total_scores) * 100
         prob_j2 = (score_j2 / total_scores) * 100
+        
         implied_j1 = (1 / cote_j1) * 100
         implied_j2 = (1 / cote_j2) * 100
         total_implied = implied_j1 + implied_j2
-        implied_j1 = (implied_j1 / total_implied) * 100
-        implied_j2 = (implied_j2 / total_implied) * 100
-        prob_j1_finale = (prob_j1 * 0.6) + (implied_j1 * 0.4)
-        prob_j2_finale = (prob_j2 * 0.6) + (implied_j2 * 0.4)
-        st.subheader("📈 Pourcentages Probables de Victoire")
+        prob_j1_finale = (prob_j1 * 0.6) + ((implied_j1 / total_implied * 100) * 0.4)
+        prob_j2_finale = (prob_j2 * 0.6) + ((implied_j2 / total_implied * 100) * 0.4)
+
+        st.subheader("📈 Pourcentages de Victoire")
         res_col1, res_col2 = st.columns(2)
         res_col1.metric(f"Probabilité {joueur_1}", f"{prob_j1_finale:.1f}%")
         res_col2.metric(f"Probabilité {joueur_2}", f"{prob_j2_finale:.1f}%")
-        st.markdown("---")
-        st.subheader("🔎 Opportunités Détectées (vs Bet261)")
-        val_j1 = (prob_j1_finale * cote_j1) / 100
-        val_j2 = (prob_j2_finale * cote_j2) / 100
-        un_value_trouve = False
-        if val_j1 > 1.06:
-            st.warning(f"⚠️ **VALUE BET ÉLEVÉ sur {joueur_1}** !")
-            un_value_trouve = True
-        if val_j2 > 1.06:
-            st.warning(f"⚠️ **VALUE BET ÉLEVÉ sur {joueur_2}** !")
-            un_value_trouve = True
-        if not un_value_trouve:
-            st.info("💡 Cotes bien ajustées. Aucun écart spéculatif majeur détecté.")
+
+        cadre_tennis = ""
+        if prob_j1_finale > 62: cadre_tennis = f"Victoire Sèche de {joueur_1}"
+        elif prob_j2_finale > 62: cadre_tennis = f"Victoire Sèche de {joueur_2}"
+        else: cadre_tennis = "Le favori prend au moins 1 Set"
+            
         st.subheader("🛡️ Option Sécurité Tennis (Mise : 5%)")
-        if prob_j1_finale > 62: st.success(f"🟩 **Cadre Vert** : Victoire Sèche de **{joueur_1}**")
-        elif prob_j2_finale > 62: st.success(f"🟩 **Cadre Vert** : Victoire Sèche de **{joueur_2}**")
-        else: st.success(f"🟩 **Cadre Vert** : 'Le joueur favori prend au moins 1 Set' dans le match.")
+        st.success(f"🟩 **Cadre Vert** : {cadre_tennis}")
+        
+        # Sauvegarde dans l'Historique
+        st.session_state.historique_paris.append({
+            "Sport": "Tennis 🎾",
+            "Match / Duel": f"{joueur_1} vs {joueur_2}",
+            "Cadre Vert": cadre_tennis,
+            "Cotes": f"{cote_j1:.2f} | {cote_j2:.2f}"
+        })
+
+# ==============================================================================
+# NOUVEAU VISUEL : SECTION HISTORIQUE DES ANALYSES (PAR TOUT SPORT)
+# ==============================================================================
+st.markdown("---")
+st.header("🗂️ Journal d'Historique des Analyses")
+if st.session_state.historique_paris:
+    st.table(st.session_state.historique_paris)
+    if st.button("🗑️ Effacer l'historique"):
+        st.session_state.historique_paris = []
+        st.rerun()
+else:
+    st.info("💡 Aucune analyse enregistrée pour le moment. Lancez un calcul pour tester l'historique.")
         
