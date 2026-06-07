@@ -141,6 +141,7 @@ if sport == "Football ⚽":
         nom_a_api = match_data["homeTeam"]["name"]
         nom_b_api = match_data["awayTeam"]["name"]
 
+    st.write("Fichier historique présent :", os.path.exists("historique.json"))
     st.markdown("---")
     st.subheader("📊 Paramètres & Données des Équipes")
     col1, col2 = st.columns(2)
