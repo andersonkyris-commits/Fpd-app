@@ -2,6 +2,8 @@ import streamlit as st
 import requests
 import math
 from datetime import datetime
+import json
+import os
 
 # Configuration de la page
 st.set_page_config(page_title="FPD Pro - Expert Predictor", page_icon="📊", layout="centered")
@@ -13,9 +15,27 @@ headers = {"X-Auth-Token": API_TOKEN}
 st.title("📊 FPD Pro v6.2 : Multi-Sports & Intelligence Tournois")
 st.caption("Sélection automatique de la surface par Tournoi et Profils Joueurs")
 
-# Initialisation de l'historique dans la session de l'utilisateur
+# =========================
+# HISTORIQUE PERMANENT
+# =========================
+
+FICHIER_HISTORIQUE = "historique.json"
+
+def charger_historique():
+    if os.path.exists(FICHIER_HISTORIQUE):
+        try:
+            with open(FICHIER_HISTORIQUE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except:
+            return []
+    return []
+
+def sauvegarder_historique(historique):
+    with open(FICHIER_HISTORIQUE, "w", encoding="utf-8") as f:
+        json.dump(historique, f, ensure_ascii=False, indent=4)
+
 if "historique_paris" not in st.session_state:
-    st.session_state.historique_paris = []
+    st.session_state.historique_paris = charger_historique()
 
 # Onglets principaux
 sport = st.sidebar.radio("🗂️ Sélectionne le Sport", ["Football ⚽", "Tennis 🎾"])
@@ -250,6 +270,8 @@ if sport == "Football ⚽":
             "Cadre Vert": cadre_vert, "Cotes": f"{cote_a:.2f} | {cote_nul:.2f} | {cote_b:.2f}"
         })
 
+        sauvegarder_historique(st.session_state.historique_paris)
+        
 # ==============================================================================
 # MODULE TENNIS ULTRA AUTOMATISÉ (TOURNOIS + SURFACES ACCORDÉES)
 # ==============================================================================
@@ -329,6 +351,8 @@ elif sport == "Tennis 🎾":
             "Cadre Vert": cadre_tennis, "Cotes": f"{cote_j1:.2f} | {cote_j2:.2f}"
         })
 
+        sauvegarder_historique(st.session_state.historique_paris)
+
 # ==============================================================================
 # SECTION HISTORIQUE DES ANALYSES
 # ==============================================================================
@@ -338,6 +362,7 @@ if st.session_state.historique_paris:
     st.table(st.session_state.historique_paris)
     if st.button("🗑️ Effacer l'historique"):
         st.session_state.historique_paris = []
+        sauvegarder_historique([])
         st.rerun()
 else:
     st.info("💡 Aucune analyse enregistrée pour le moment.")
