@@ -287,19 +287,20 @@ elif sport == "Tennis 🎾":
     max_value=10,
     value=7,
     key="vic_j1"
-)
+    )
 
-v2 = col2.number_input(
+    v2 = col2.number_input(
     f"Victoires récentes de {j2}",
     min_value=0,
     max_value=10,
     value=7,
     key="vic_j2"
-)
+    )
+    
     # =========================
     # COTES
     # =========================
-    st.subheader("💰 Cotes Bet261")
+st.subheader("💰 Cotes Bet261")
 
     c1, c2 = st.columns(2)
     cote1 = c1.number_input(f"Cote {j1}", min_value=1.01, value=1.80)
