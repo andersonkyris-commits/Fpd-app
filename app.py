@@ -281,9 +281,21 @@ elif sport == "Tennis 🎾":
     # =========================
     # FORME RÉCENTE (simplifiée)
     # =========================
-    v1 = col1.number_input("Victoires (10 derniers matchs)", 0, 10, 7)
-    v2 = col2.number_input("Victoires (10 derniers matchs)", 0, 10, 7)
+    v1 = col1.number_input(
+    f"Victoires récentes de {j1}",
+    min_value=0,
+    max_value=10,
+    value=7,
+    key="vic_j1"
+)
 
+v2 = col2.number_input(
+    f"Victoires récentes de {j2}",
+    min_value=0,
+    max_value=10,
+    value=7,
+    key="vic_j2"
+)
     # =========================
     # COTES
     # =========================
