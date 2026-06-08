@@ -352,9 +352,18 @@ elif sport == "Tennis 🎾":
     st.subheader("💰 Cotes Bet261")
 
     c1, c2 = st.columns(2)
-    cote1 = c1.number_input(f"Cote {j1}", min_value=1.01, value=1.80)
-    cote2 = c2.number_input(f"Cote {j2}", min_value=1.01, value=2.00)
+    cote1 = c1.number_input(
+        f"Cote {joueur_1 or 'Joueur 1'}",
+        min_value=1.01,
+        value=1.80
+    )
 
+    cote2 = c2.number_input(
+        f"Cote {joueur_2 or 'Joueur 2'}",
+        min_value=1.01,
+        value=2.00
+    )
+    
     # =========================
     # BOUTON ANALYSE
     # =========================
