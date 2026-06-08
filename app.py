@@ -290,7 +290,7 @@ elif sport == "Tennis 🎾":
 
     if st.button("Tester endpoint"):
 
-        url = f"https://api.balldontlie.io/atp/v1/{endpoints}"
+        url = f"https://api.balldontlie.io/atp/v1/{endpoint}"
 
         response = requests.get(
             url,
