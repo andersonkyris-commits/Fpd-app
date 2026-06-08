@@ -14,12 +14,10 @@ tennis_headers = {
 }
 
 @st.cache_data(ttl=3600)
-def recuperer_rang_atp(nom_joueur):
+def recuperer_rang_atp(nom_joueur, rankings):
 
     if not nom_joueur:
         return None
-
-    rankings = recuperer_tous_les_rankings()
 
     for joueur in rankings:
         if nom_joueur.lower() in joueur["player"]["full_name"].lower():
@@ -370,8 +368,10 @@ elif sport == "Tennis 🎾":
     joueur_1 = col_j1.text_input("Nom du Joueur 1")
     joueur_2 = col_j2.text_input("Nom du Joueur 2")
 
-    rang_j1 = recuperer_rang_atp(joueur_1) if joueur_1 else None
-    rang_j2 = recuperer_rang_atp(joueur_2) if joueur_2 else None
+    rankings = recuperer_tous_les_rankings()
+
+    rang_j1 = recuperer_rang_atp(joueur_1, rankings) if joueur_1 else None
+    rang_j2 = recuperer_rang_atp(joueur_2, rankings) if joueur_2 else None
 
     if rang_j1:
         st.info(f"🏆 Rang ATP {joueur_1} : {rang_j1}")
