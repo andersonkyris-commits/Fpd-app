@@ -7,8 +7,11 @@ import os
 import requests
 import streamlit as st
 
-API_KEY = st.secrets["TENNIS_API_KEY"]
+TENNIS_API_KEY = st.secrets["TENNIS_API_KEY"]
 
+tennis_headers = {
+    "Authorization": TENNIS_API_KEY
+}
 headers = {
     "Authorization": API_KEY
 }
@@ -46,8 +49,8 @@ def recuperer_rang_atp(nom_joueur):
 st.set_page_config(page_title="FPD Pro - Expert Predictor", page_icon="📊", layout="centered")
 
 # Clé API Football-Data.org
-API_TOKEN = "bb42361060ff481499fe8538f511115a"
-headers = {"X-Auth-Token": API_TOKEN}
+FOOTBALL_API_KEY = "bb42361060ff481499fe8538f511115a"
+football_headers = {"X-Auth-Token": FOOTBALL_API_KEY}
 
 st.title("📊 FPD Pro v6.2 : Multi-Sports & Intelligence Tournois")
 st.caption("Sélection automatique de la surface par Tournoi et Profils Joueurs")
