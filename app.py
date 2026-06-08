@@ -4,9 +4,16 @@ import math
 from datetime import datetime
 import json
 import os
+import requests
 import streamlit as st
 
-TENNIS_API_KEY = st.secrets["TENNIS_API_KEY"]
+API_KEY = st.secrets["TENNIS_API_KEY"]
+
+headers = {
+    "Authorization": API_KEY
+}
+
+st.write("Test connexion API...")
 
 # Configuration de la page
 st.set_page_config(page_title="FPD Pro - Expert Predictor", page_icon="📊", layout="centered")
