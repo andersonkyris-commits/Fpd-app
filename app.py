@@ -315,8 +315,8 @@ for joueur in data["data"]:
         trouve = True
         break
 
-if not trouve:
-    st.warning("Joueur non trouvé")
+    if not trouve:
+        st.warning("Joueur non trouvé")
     
     else:
         st.error("API KO")
