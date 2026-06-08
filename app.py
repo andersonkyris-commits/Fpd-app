@@ -405,14 +405,22 @@ elif sport == "Tennis 🎾":
         # =========================
         # BONUS SURFACE (LOGIQUE RÉELLE)
         # =========================
+        surface_map = {
+            "Hard": "Dur",
+            "Clay": "Terre Battue",
+            "Grass": "Gazon"
+        }
+
+        surface = surface_map.get(surface, "Dur")
+
         surface_bonus = {
             "Dur": 0.5,
             "Terre Battue": 0.7,
             "Gazon": 0.6
         }
 
-        score1 *= (1 + surface_bonus[surface])
-        score2 *= (1 + surface_bonus[surface])
+        score1 *= (1 + surface_bonus.get(surface, 0.5))
+        score2 *= (1 + surface_bonus.get(surface, 0.5))
 
         # =========================
         # ÉCART RANG (OPTIONNEL MAIS PROPRE)
