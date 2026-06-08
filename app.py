@@ -310,9 +310,9 @@ elif sport == "Tennis 🎾":
     # =========================
     # JOUEURS
     # =========================
-    col1, col2 = st.columns(2)
-    j1 = col1.text_input("Joueur 1", "Djokovic")
-    j2 = col2.text_input("Joueur 2", "Nadal")
+    tex1, tex2 = st.columns(2)
+    joueur_1 = tx1.text_input("Nom du Joueur 1")
+    joueur_2 = tx2.text_input("Nom du Joueur 2")
 
     rang_j1 = recuperer_rang_atp(joueur_1)
     rang_j2 = recuperer_rang_atp(joueur_2)
