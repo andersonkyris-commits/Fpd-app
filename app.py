@@ -32,7 +32,7 @@ def recuperer_rang_atp(nom_joueur):
 
     rankings = recuperer_tous_les_rankings()
 
-for joueur in rankings:
+    for joueur in rankings:
         if nom_joueur.lower() in joueur["player"]["full_name"].lower():
             return joueur["rank"]
 
