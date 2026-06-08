@@ -423,6 +423,21 @@ elif sport == "Tennis 🎾":
         score2 *= (1 + surface_bonus.get(surface, 0.5))
 
         # =========================
+        # POIDS TOURNOI (NOUVEAU)
+        # =========================
+        poids_tournoi = {
+            "Grand Slam": 1.5,
+            "Masters 1000": 1.3,
+            "ATP 500": 1.1,
+            "ATP 250": 1.0
+        }
+
+        facteur_tournoi = poids_tournoi.get(categorie, 1.0)
+
+        score1 *= facteur_tournoi
+        score2 *= facteur_tournoi
+        
+        # =========================
         # ÉCART RANG (OPTIONNEL MAIS PROPRE)
         # =========================
         if rang_j1 and rang_j2:
