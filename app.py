@@ -294,38 +294,36 @@ elif sport == "Tennis 🎾":
     st.header("🎾 Analyse Tennis V7.4 (Tournois API)")
     st.subheader("🔍 Test endpoints ATP")
 
-tests = [
-    "players",
-    "rankings",
-    "tournaments"
-]
+    tests = [
+        "players",
+        "rankings",
+        "tournaments"
+    ]
 
-for endpoint in tests:
-    try:
-        r = requests.get(
-            f"https://api.balldontlie.io/atp/v1/{endpoint}",
-            headers=tennis_headers
-        )
-        st.write(endpoint, "→", r.status_code)
-    except Exception as e:
-        st.write(endpoint, "→ erreur :", e)
-        
+    for endpoint in tests:
+        try:
+            r = requests.get(
+                f"https://api.balldontlie.io/atp/v1/{endpoint}",
+                headers=tennis_headers
+            )
+            st.write(endpoint, "→", r.status_code)
+        except Exception as e:
+            st.write(endpoint, "→ erreur :", e)
+
     tournois = recuperer_tournois()
 
     if not tournois:
         st.warning("Aucun tournoi disponible")
         st.stop()
 
-    # =========================
-    # DICTIONNAIRE TOURNOI
-    # =========================
     options_tournois = {
         t["name"]: t for t in tournois
     }
 
     tournoi_nom = st.selectbox(
         "🏆 Tournoi ATP",
-        list(options_tournois.keys())
+        list(options_tournois.keys()),
+        key="tournoi_atp"
     )
 
     tournoi = options_tournois[tournoi_nom]
