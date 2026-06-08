@@ -309,8 +309,17 @@ if sport == "Football ⚽":
 elif sport == "Tennis 🎾":
     st.header("🎾 Analyse Tennis V7.4 (Tournois API)")
     
+    response = requests.get(
+    "https://api.balldontlie.io/atp/v1/players",
+    headers=tennis_headers
+)
+
+data = response.json()
+
+st.write("Players récupérés :", len(data.get("data", [])))
+st.write("Next cursor players :", data.get("meta", {}).get("next_cursor"))
+
     tournois = recuperer_tournois()
-    st.write("Nombre de tournois :", len(tournois))
     
     if not tournois:
         st.warning("Aucun tournoi disponible")
