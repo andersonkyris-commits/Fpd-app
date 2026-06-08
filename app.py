@@ -337,11 +337,7 @@ if sport == "Football ⚽":
 # ==============================================================================
 elif sport == "Tennis 🎾":
     st.header("🎾 Analyse Tennis V7.4 (Tournois API)")
-    st.write(
-        "Nombre rankings ATP :",
-        len(recuperer_tous_les_rankings())
-    )  
-
+    
     tournois = recuperer_tournois()
     
     if not tournois:
