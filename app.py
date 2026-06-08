@@ -455,17 +455,16 @@ elif sport == "Tennis 🎾":
         # =========================
         # HISTORIQUE
         # =========================
-        st.session_state.historique_paris.append({
-            "Sport": "Tennis 🎾",
-            "Match": f"{j1} vs {j2}",
-            "Surface": surface,
-            "Proba J1": round(p1, 1),
-            "Proba J2": round(p2, 1),
-            "Value J1": round(value1, 1),
-            "Value J2": round(value2, 1),
-            "Reco": reco
-        })
-
+    st.session_state.historique_paris.append({
+        "Sport": "Tennis 🎾",
+        "Match": f"{joueur_1} vs {joueur_2}",
+        "Surface": surface,
+        "Proba J1": round(p1, 1),
+        "Proba J2": round(p2, 1),
+        "Value J1": round(value1, 1),
+        "Value J2": round(value2, 1),
+        "Reco": reco
+    })
         sauvegarder_historique(st.session_state.historique_paris)
         
 # ==============================================================================
