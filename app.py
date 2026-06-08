@@ -13,6 +13,18 @@ headers = {
     "Authorization": API_KEY
 }
 
+response = requests.get(
+    "https://api.balldontlie.io/atp/v1/players",
+    headers=headers
+)
+
+st.write(response.status_code)
+
+if response.status_code == 200:
+    st.json(response.json())
+else:
+    st.error("Erreur API")
+
 st.write("Test connexion API...")
 
 # Configuration de la page
