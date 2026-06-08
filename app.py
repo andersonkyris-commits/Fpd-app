@@ -19,13 +19,14 @@ def recuperer_rang_atp(nom_joueur, rankings):
     if not nom_joueur:
         return None
 
+    nom_joueur = nom_joueur.lower()
+
     for joueur in rankings:
-        if nom_joueur.lower() in joueur["player"]["full_name"].lower():
+        if nom_joueur in joueur["player"]["full_name"].lower():
             return joueur["rank"]
 
     return None
 
-@st.cache_data(ttl=3600)
 def recuperer_tournois():
 
     tous_les_tournois = []
@@ -63,38 +64,27 @@ def recuperer_tournois():
 
     return tous_les_tournois
     
-@st.cache_data(ttl=3600)
 def recuperer_tous_les_rankings():
-
     tous_les_rankings = []
     cursor = None
 
     while True:
-
         url = "https://api.balldontlie.io/atp/v1/rankings"
 
         if cursor:
             url += f"?cursor={cursor}"
 
-        response = requests.get(
-            url,
-            headers=tennis_headers
-        )
+        response = requests.get(url, headers=tennis_headers)
 
         if response.status_code != 200:
-            st.error(f"Erreur API Rankings : {response.status_code}")
+            st.warning("Erreur API Rankings")
             break
 
         data = response.json()
 
-        tous_les_rankings.extend(
-            data.get("data", [])
-        )
+        tous_les_rankings.extend(data.get("data", []))
 
-        cursor = (
-            data.get("meta", {})
-                .get("next_cursor")
-        )
+        cursor = data.get("meta", {}).get("next_cursor")
 
         if not cursor:
             break
