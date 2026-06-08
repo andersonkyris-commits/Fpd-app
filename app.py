@@ -337,16 +337,10 @@ if sport == "Football ⚽":
 # ==============================================================================
 elif sport == "Tennis 🎾":
     st.header("🎾 Analyse Tennis V7.4 (Tournois API)")
-    
-    response = requests.get(
-    "https://api.balldontlie.io/atp/v1/rankings",
-        headers=tennis_headers
-    )
-
-    data = response.json()
-
-    st.write("Rankings récupérés :", len(data.get("data", [])))
-    st.write("Next cursor rankings :", data.get("meta", {}).get("next_cursor"))
+    st.write(
+        "Nombre rankings ATP :",
+        len(recuperer_tous_les_rankings())
+    )  
 
     tournois = recuperer_tournois()
     
