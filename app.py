@@ -22,6 +22,27 @@ data = response.json()
 
 st.json(data)
 
+@st.cache_data(ttl=3600)
+def recuperer_rang_atp(nom_joueur):
+
+    response = requests.get(
+        "https://api.balldontlie.io/atp/v1/rankings",
+        headers=headers
+    )
+
+    if response.status_code != 200:
+        return None
+
+    data = response.json()
+
+    for joueur in data["data"]:
+
+        if nom_joueur.lower() in joueur["player"]["full_name"].lower():
+
+            return joueur["rank"]
+
+    return None
+    
 # Configuration de la page
 st.set_page_config(page_title="FPD Pro - Expert Predictor", page_icon="📊", layout="centered")
 
