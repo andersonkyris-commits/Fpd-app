@@ -280,7 +280,29 @@ if sport == "Football ⚽":
 # ==============================================================================
 elif sport == "Tennis 🎾":
     st.header("🎾 Analyse Tennis V7.3 (Ranking + Surface + H2H)")
-    
+    st.subheader("🔍 Test Endpoint ATP")
+
+    endpoint = st.text_input(
+        "Endpoint à tester",
+        "matches"
+    )
+
+    if st.button("Tester endpoint"):
+
+        url = f"https://api.balldontlie.io/atp/v1/{endpoint}"
+
+        response = requests.get(
+            url,
+            headers={"Authorization": API_KEY}
+        )
+
+        st.write("Status :", response.status_code)
+
+        try:
+            st.json(response.json())
+        except:
+            st.code(response.text)
+            
     # =========================
     # TOURNOIS + SURFACES
     # =========================
