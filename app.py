@@ -30,7 +30,9 @@ def recuperer_rang_atp(nom_joueur):
 
     data = response.json()
 
-    for joueur in data.get("data", []):
+    rankings = recuperer_tous_les_rankings()
+
+for joueur in rankings:
         if nom_joueur.lower() in joueur["player"]["full_name"].lower():
             return joueur["rank"]
 
@@ -73,6 +75,44 @@ def recuperer_tournois():
             break
 
     return tous_les_tournois
+    
+@st.cache_data(ttl=3600)
+def recuperer_tous_les_rankings():
+
+    tous_les_rankings = []
+    cursor = None
+
+    while True:
+
+        url = "https://api.balldontlie.io/atp/v1/rankings"
+
+        if cursor:
+            url += f"?cursor={cursor}"
+
+        response = requests.get(
+            url,
+            headers=tennis_headers
+        )
+
+        if response.status_code != 200:
+            st.error(f"Erreur API Rankings : {response.status_code}")
+            break
+
+        data = response.json()
+
+        tous_les_rankings.extend(
+            data.get("data", [])
+        )
+
+        cursor = (
+            data.get("meta", {})
+                .get("next_cursor")
+        )
+
+        if not cursor:
+            break
+
+    return tous_les_rankings
 
 # =========================
 # HISTORIQUE PERMANENT
