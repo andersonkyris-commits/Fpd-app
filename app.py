@@ -14,30 +14,31 @@ headers = {
 }
 
 @st.cache_data(ttl=3600)
+@st.cache_data(ttl=3600)
 def recuperer_rang_atp(nom_joueur):
+
+    if not nom_joueur:
+        return None
 
     response = requests.get(
         "https://api.balldontlie.io/atp/v1/rankings",
         headers=headers
     )
-    
-    data =response.json()
 
-    st.json(data)
-
+    # 🔴 sécurité API
     if response.status_code != 200:
+        st.warning(f"Erreur API ATP: {response.status_code}")
         return None
 
-    data = response.json()
+    try:
+        data = response.json()
+    except Exception:
+        st.error("Réponse API invalide (pas du JSON)")
+        return None
 
-    for joueur in data["data"]:
-
+    for joueur in data.get("data", []):
         if nom_joueur.lower() in joueur["player"]["full_name"].lower():
-
             return joueur["rank"]
-
-        if not nom_joueur:
-            return None
 
     return None
     
