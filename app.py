@@ -304,7 +304,7 @@ for endpoint in tests:
     try:
         r = requests.get(
             f"https://api.balldontlie.io/atp/v1/{endpoint}",
-            headers=headers
+            headers=tennis_headers
         )
         st.write(endpoint, "→", r.status_code)
     except Exception as e:
