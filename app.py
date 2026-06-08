@@ -13,15 +13,6 @@ headers = {
     "Authorization": API_KEY
 }
 
-response = requests.get(
-    "https://api.balldontlie.io/atp/v1/rankings",
-    headers=headers
-)
-
-data = response.json()
-
-st.json(data)
-
 @st.cache_data(ttl=3600)
 def recuperer_rang_atp(nom_joueur):
 
@@ -29,6 +20,10 @@ def recuperer_rang_atp(nom_joueur):
         "https://api.balldontlie.io/atp/v1/rankings",
         headers=headers
     )
+    
+ data =response.json()
+
+ st.json(data)
 
     if response.status_code != 200:
         return None
@@ -40,6 +35,9 @@ def recuperer_rang_atp(nom_joueur):
         if nom_joueur.lower() in joueur["player"]["full_name"].lower():
 
             return joueur["rank"]
+
+        if not nom_joueur:
+            return None
 
     return None
     
