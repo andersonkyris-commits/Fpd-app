@@ -294,7 +294,7 @@ elif sport == "Tennis 🎾":
 
         response = requests.get(
             url,
-            response = requests.get(url, headers=headers)
+            response = requests.get(url, headers=tennis_headers)
         )
             
         st.write("Status :", response.status_code)
