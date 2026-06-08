@@ -38,25 +38,41 @@ def recuperer_rang_atp(nom_joueur):
 
 @st.cache_data(ttl=3600)
 def recuperer_tournois():
-    url = "https://api.balldontlie.io/atp/v1/tournaments"
 
-    response = requests.get(url, headers=tennis_headers)
+    tous_les_tournois = []
+    cursor = None
 
-    if response.status_code != 200:
-        st.error(f"Erreur API Tournois: {response.status_code}")
-        return []
+    while True:
 
-    return response.json().get("data", [])
-    
-# Configuration de la page
-st.set_page_config(page_title="FPD Pro - Expert Predictor", page_icon="📊", layout="centered")
+        url = "https://api.balldontlie.io/atp/v1/tournaments"
 
-# Clé API Football-Data.org
-FOOTBALL_API_KEY = "bb42361060ff481499fe8538f511115a"
-football_headers = {"X-Auth-Token": FOOTBALL_API_KEY}
+        if cursor:
+            url += f"?cursor={cursor}"
 
-st.title("📊 FPD Pro v6.2 : Multi-Sports & Intelligence Tournois")
-st.caption("Sélection automatique de la surface par Tournoi et Profils Joueurs")
+        response = requests.get(
+            url,
+            headers=tennis_headers
+        )
+
+        if response.status_code != 200:
+            st.error(f"Erreur API Tournois : {response.status_code}")
+            break
+
+        data = response.json()
+
+        tous_les_tournois.extend(
+            data.get("data", [])
+        )
+
+        cursor = (
+            data.get("meta", {})
+                .get("next_cursor")
+        )
+
+        if not cursor:
+            break
+
+    return tous_les_tournois
 
 # =========================
 # HISTORIQUE PERMANENT
