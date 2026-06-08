@@ -292,29 +292,32 @@ if sport == "Football ⚽":
 # ==============================================================================
 elif sport == "Tennis 🎾":
     st.header("🎾 Analyse Tennis V7.3 (Ranking + Surface + H2H)")
-    st.write("API chargée :", "Oui")
-    st.subheader("🔍 Test Endpoint ATP")
 
-    endpoint = st.text_input(
-        "Endpoint à tester",
-        "matches"
+    tournois = recuperer_tournois()
+
+    if not tournois:
+        st.warning("Aucun tournoi disponible")
+        st.stop()
+        
+        options_tournois = {
+            t["name"]: t for t in tournois
+        }
+
+    #==========================
+    # DICTIONNAIRE TOURNOI
+    #==========================
+    tournoi_nom = st.selectbox(
+        "🏆 Tournoi ATP",
+        list(options_tournois.keys())
     )
 
-    if st.button("Tester endpoint"):
+    tournoi = options_tournois[tournoi_nom]
 
-        url = f"https://api.balldontlie.io/atp/v1/{endpoint}"
+    surface = tournoi.get("surface", "Inconnue")
+    categorie = tournoi.get("category", "Inconnue")
 
-        response = requests.get(
-            url,
-            headers=tennis_headers
-        )
-            
-        st.write("Status :", response.status_code)
-
-        try:
-            st.json(response.json())
-        except:
-            st.code(response.text)
+    st.info(f"🏟 Surface : {surface}")
+    st.info(f"🏆 Catégorie : {categorie}")
 
     # =========================
     # JOUEURS
