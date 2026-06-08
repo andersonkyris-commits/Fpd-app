@@ -18,7 +18,7 @@ nom_joueur = st.text_input("Nom du joueur", "Carlos Alcaraz")
 if st.button("Rechercher joueur"):
 
     response = requests.get(
-        "https://api.balldontlie.io/atp/v1/rankings",
+        "https://api.balldontlie.io/atp/v1/players",
         headers=headers
     )
 
