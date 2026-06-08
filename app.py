@@ -310,14 +310,14 @@ elif sport == "Tennis 🎾":
     st.header("🎾 Analyse Tennis V7.4 (Tournois API)")
     
     response = requests.get(
-    "https://api.balldontlie.io/atp/v1/players",
+    "https://api.balldontlie.io/atp/v1/rankings",
         headers=tennis_headers
     )
 
     data = response.json()
 
-    st.write("Players récupérés :", len(data.get("data", [])))
-    st.write("Next cursor players :", data.get("meta", {}).get("next_cursor"))
+    st.write("Rankings récupérés :", len(data.get("data", [])))
+    st.write("Next cursor rankings :", data.get("meta", {}).get("next_cursor"))
 
     tournois = recuperer_tournois()
     
