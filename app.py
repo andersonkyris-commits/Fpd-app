@@ -306,62 +306,46 @@ elif sport == "Tennis 🎾":
     surface = DICTIONNAIRE_TOURNOIS[tournoi]
 
     st.info(f"🏟 Surface détectée : {surface}")
-
     # =========================
     # JOUEURS
     # =========================
-    col1, col2 = st.columns(2)
+    col_j1, col_j2 = st.columns(2)
 
-    v1 = col1.number_input(
-    f"Victoires récentes de {joueur_1}",
-    min_value=0,
-    max_value=10,
-    value=7,
-    key="vic_j1"
-    )
+    joueur_1 = col_j1.text_input("Nom du Joueur 1")
+    joueur_2 = col_j2.text_input("Nom du Joueur 2")
 
-    v2 = col2.number_input(
-    f"Victoires récentes de {joueur_2}",
-    min_value=0,
-    max_value=10,
-    value=7,
-    key="vic_j2"
-    )
-    
-    tex1, tex2 = st.columns(2)
-    joueur_1 = tex1.text_input("Nom du Joueur 1")
-    joueur_2 = tex2.text_input("Nom du Joueur 2")
-
-    rang_j1 = recuperer_rang_atp(joueur_1)
-    rang_j2 = recuperer_rang_atp(joueur_2)
+    rang_j1 = recuperer_rang_atp(joueur_1) if joueur_1 else None
+    rang_j2 = recuperer_rang_atp(joueur_2) if joueur_2 else None
 
     if rang_j1:
         st.info(f"🏆 Rang ATP {joueur_1} : {rang_j1}")
 
     if rang_j2:
         st.info(f"🏆 Rang ATP {joueur_2} : {rang_j2}")
-    
+
     st.markdown("---")
 
     # =========================
-    # FORME RÉCENTE (simplifiée)
+    # FORME RÉCENTE
     # =========================
+    col1, col2 = st.columns(2)
+
     v1 = col1.number_input(
-    f"Victoires récentes de {j1}",
-    min_value=0,
-    max_value=10,
-    value=7,
-    key="vic_j1"
+        f"Victoires récentes de {joueur_1 or 'Joueur 1'}",
+        min_value=0,
+        max_value=10,
+        value=7,
+        key="vic_j1"
     )
 
     v2 = col2.number_input(
-    f"Victoires récentes de {j2}",
-    min_value=0,
-    max_value=10,
-    value=7,
-    key="vic_j2"
+        f"Victoires récentes de {joueur_2 or 'Joueur 2'}",
+        min_value=0,
+        max_value=10,
+        value=7,
+        key="vic_j2"
     )
-    
+
     # =========================
     # COTES
     # =========================
