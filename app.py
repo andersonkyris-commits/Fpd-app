@@ -35,6 +35,18 @@ def recuperer_rang_atp(nom_joueur):
             return joueur["rank"]
 
     return None
+
+@st.cache_data(ttl=3600)
+def recuperer_tournois():
+    url = "https://api.balldontlie.io/atp/v1/tournaments"
+
+    response = requests.get(url, headers=tennis_headers)
+
+    if response.status_code != 200:
+        st.error(f"Erreur API Tournois: {response.status_code}")
+        return []
+
+    return response.json().get("data", [])
     
 # Configuration de la page
 st.set_page_config(page_title="FPD Pro - Expert Predictor", page_icon="📊", layout="centered")
@@ -303,74 +315,7 @@ elif sport == "Tennis 🎾":
             st.json(response.json())
         except:
             st.code(response.text)
-            
-    # =========================
-    # TOURNOIS + SURFACES
-    # =========================
-    DICTIONNAIRE_TOURNOIS = {
 
-        # Grand Chelem
-        "Open d'Australie": "Dur",
-        "Roland-Garros": "Terre Battue",
-        "Wimbledon": "Gazon",
-        "US Open": "Dur",
-
-        # Masters 1000
-        "Indian Wells": "Dur",
-        "Miami Open": "Dur",
-        "Monte-Carlo": "Terre Battue",
-        "Madrid Open": "Terre Battue",
-        "Rome Open": "Terre Battue",
-        "Canada Masters": "Dur",
-        "Cincinnati": "Dur",
-        "Shanghai": "Dur",
-        "Paris-Bercy": "Dur",
-
-        # ATP Finals
-        "ATP Finals Turin": "Dur",
-
-        # ATP 500
-        "Barcelone": "Terre Battue",
-        "Hambourg": "Terre Battue",
-        "Queen's Club": "Gazon",
-        "Halle": "Gazon",
-        "Washington": "Dur",
-        "Tokyo": "Dur",
-        "Pékin": "Dur",
-        "Bâle": "Dur",
-        "Vienne": "Dur",
-        "Acapulco": "Dur",
-        "Dubaï": "Dur",
-
-        # ATP 250
-        "Stuttgart": "Gazon",
-        "Eastbourne": "Gazon",
-        "Mallorca": "Gazon",
-        "Doha": "Dur",
-        "Adelaide": "Dur",
-        "Brisbane": "Dur",
-        "Marseille": "Dur",
-        "Montpellier": "Dur",
-        "Los Cabos": "Dur",
-
-        # Terre battue ATP 250
-        "Buenos Aires": "Terre Battue",
-        "Santiago": "Terre Battue",
-        "Marrakech": "Terre Battue",
-        "Munich": "Terre Battue",
-        "Geneva Open": "Terre Battue",
-        "Umag": "Terre Battue",
-
-        # Autres
-        "Autre tournoi Dur": "Dur",
-        "Autre tournoi Terre Battue": "Terre Battue",
-        "Autre tournoi Gazon": "Gazon"
-    }
-
-    tournoi = st.selectbox("Tournoi", list(DICTIONNAIRE_TOURNOIS.keys()))
-    surface = DICTIONNAIRE_TOURNOIS[tournoi]
-
-    st.info(f"🏟 Surface détectée : {surface}")
     # =========================
     # JOUEURS
     # =========================
