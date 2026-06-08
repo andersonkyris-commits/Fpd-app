@@ -293,7 +293,7 @@ elif sport == "Tennis 🎾":
 
         response = requests.get(
             url,
-            headers={"Authorization": API_KEY}
+            headers=headers
         )
 
         st.write("Status :", response.status_code)
