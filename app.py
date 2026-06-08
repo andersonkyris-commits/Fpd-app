@@ -27,42 +27,18 @@ def recuperer_rang_atp(nom_joueur, rankings):
 
     return None
 
+@st.cache_data(ttl=3600)
 def recuperer_tournois():
 
-    tous_les_tournois = []
-    cursor = None
+    url = "https://api.balldontlie.io/atp/v1/tournaments"
 
-    while True:
+    response = requests.get(url, headers=tennis_headers)
 
-        url = "https://api.balldontlie.io/atp/v1/tournaments"
+    if response.status_code != 200:
+        st.warning(f"Erreur API Tournois : {response.status_code}")
+        return []
 
-        if cursor:
-            url += f"?cursor={cursor}"
-
-        response = requests.get(
-            url,
-            headers=tennis_headers
-        )
-
-        if response.status_code != 200:
-            st.error(f"Erreur API Tournois : {response.status_code}")
-            break
-
-        data = response.json()
-
-        tous_les_tournois.extend(
-            data.get("data", [])
-        )
-
-        cursor = (
-            data.get("meta", {})
-                .get("next_cursor")
-        )
-
-        if not cursor:
-            break
-
-    return tous_les_tournois
+    return response.json().get("data", [])
     
 def recuperer_tous_les_rankings():
     tous_les_rankings = []
