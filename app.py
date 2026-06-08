@@ -13,15 +13,6 @@ headers = {
     "Authorization": API_KEY
 }
 
-response = requests.get(
-    "https://api.balldontlie.io/atp/v1/rankings",
-    headers=headers
-)
-
-data = response.json()
-
-st.json(data)
-
 @st.cache_data(ttl=3600)
 def recuperer_rang_atp(nom_joueur):
 
