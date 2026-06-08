@@ -283,26 +283,26 @@ elif sport == "Tennis 🎾":
     st.header("🎾 Analyse Tennis V7.3 (Ranking + Surface + H2H)")
     st.subheader("🔍 Test API ATP")
 
-    test_nom = st.text_input("Test joueur API", "Carlos Alcaraz")
+test_nom = st.text_input("Test joueur API", "Carlos Alcaraz")
 
-    if st.button("Tester API ATP"):
+if st.button("Tester API ATP"):
 
-        response = requests.get(
-            "https://api.balldontlie.io/atp/v1/rankings",
-            headers=tennis_headers
-        )
+    response = requests.get(
+        "https://api.balldontlie.io/atp/v1/rankings",
+        headers=tennis_headers
+    )
 
     st.write("Status:", response.status_code)
 
-        if response.status_code == 200:
-            data = response.json()
+    if response.status_code == 200:
+        data = response.json()
 
-            st.success("API OK")
+        st.success("API OK")
 
-            st.write("Nombre joueurs:", len(data.get("data", [])))
+        st.write("Nombre joueurs:", len(data.get("data", [])))
 
-            for joueur in data["data"][:3]:
-                st.json(joueur)
+        for joueur in data["data"][:3]:
+            st.json(joueur)
 
     else:
         st.error("API KO")
