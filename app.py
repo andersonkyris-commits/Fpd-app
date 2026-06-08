@@ -377,55 +377,66 @@ elif sport == "Tennis 🎾":
         value=2.00
     )
     
+# =========================
+# BOUTON ANALYSE
+# =========================
+if st.button("📊 Lancer analyse Tennis V7.3"):
+
     # =========================
-    # BOUTON ANALYSE
+    # SCORE BASE
     # =========================
-    if st.button("📊 Lancer analyse Tennis V7.3"):
+    score1 = v1 * 10
+    score2 = v2 * 10
 
-        # =========================
-        # SCORE BASE
-        # =========================
-        score1 = v1 * 10
-        score2 = v2 * 10
+    # =========================
+    # RANKING ATP RÉEL
+    # =========================
 
-        # =========================
-        # BONUS SURFACE (LOGIQUE RÉELLE)
-        # =========================
-        surface_bonus = {
-            "Dur": 0.5,
-            "Terre Battue": 0.7,
-            "Gazon": 0.6
-        }
+    if rang_j1 is None:
+        rang_j1 = 2000
+    if rang_j2 is None:
+        rang_j2 = 2000
 
-        score1 *= (1 + surface_bonus[surface])
-        score2 *= (1 + surface_bonus[surface])
+    rank_diff = rang_j2 - rang_j1
 
-        # =========================
-        # SIMULATION RANKING (IMPORTANT)
-        # =========================
-        # sans API ranking on simule un écart logique
-        if rang_j1 and rang_j2:
+    score1 += max(0, (rang_j2 - rang_j1) * 0.2)
+    score2 += max(0, (rang_j1 - rang_j2) * 0.2)
 
-            ecart_rang = rang_j2 - rang_j1
+    # =========================
+    # BONUS SURFACE (LOGIQUE RÉELLE)
+    # =========================
+    surface_bonus = {
+        "Dur": 0.5,
+        "Terre Battue": 0.7,
+        "Gazon": 0.6
+    }
 
-            score1 += ecart_rang * 1.5
-            score2 -= ecart_rang * 1.5
+    score1 *= (1 + surface_bonus[surface])
+    score2 *= (1 + surface_bonus[surface])
 
-        # =========================
-        # PROBABILITÉS
-        # =========================
-        total = score1 + score2
-        p1 = (score1 / total) * 100
-        p2 = (score2 / total) * 100
+    # =========================
+    # ÉCART RANG (OPTIONNEL MAIS PROPRE)
+    # =========================
+    if rang_j1 and rang_j2:
+        ecart_rang = rang_j2 - rang_j1
+        score1 += ecart_rang * 1.5
+        score2 -= ecart_rang * 1.5
 
-        # =========================
-        # VALUE BET
-        # =========================
-        imp1 = (1 / cote1) * 100
-        imp2 = (1 / cote2) * 100
+    # =========================
+    # PROBABILITÉS
+    # =========================
+    total = score1 + score2
+    p1 = (score1 / total) * 100
+    p2 = (score2 / total) * 100
 
-        value1 = p1 - imp1
-        value2 = p2 - imp2
+    # =========================
+    # VALUE BET
+    # =========================
+    imp1 = (1 / cote1) * 100
+    imp2 = (1 / cote2) * 100
+
+    value1 = p1 - imp1
+    value2 = p2 - imp2
 
         # =========================
         # AFFICHAGE
