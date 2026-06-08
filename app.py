@@ -301,7 +301,7 @@ if st.button("Tester API ATP"):
 
         st.write("Nombre joueurs:", len(data.get("data", [])))
 
-        trouve = False
+trouve = False
 
 for joueur in data["data"]:
 
@@ -317,7 +317,7 @@ for joueur in data["data"]:
 
 if not trouve:
     st.warning("Joueur non trouvé")
-
+    
     else:
         st.error("API KO")
         st.write(response.text)
