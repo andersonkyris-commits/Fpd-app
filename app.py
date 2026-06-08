@@ -464,7 +464,8 @@ elif sport == "Tennis 🎾":
         "Value J1": round(value1, 1),
         "Value J2": round(value2, 1),
         "Reco": reco
-    })
+     })
+
         sauvegarder_historique(st.session_state.historique_paris)
         
 # ==============================================================================
