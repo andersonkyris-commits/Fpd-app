@@ -355,13 +355,13 @@ elif sport == "Tennis 🎾":
     # =========================
     col_j1, col_j2 = st.columns(2)
 
+    rankings = recuperer_tous_les_rankings()
+
     joueur_1 = col_j1.text_input("Nom du Joueur 1")
     joueur_2 = col_j2.text_input("Nom du Joueur 2")
 
-    rankings = recuperer_tous_les_rankings()
-
-    rang_j1 = recuperer_rang_atp(joueur_1, rankings) if joueur_1 else None
-    rang_j2 = recuperer_rang_atp(joueur_2, rankings) if joueur_2 else None
+    rang_j1 = recuperer_rang_atp(joueur_1, rankings)
+    rang_j2 = recuperer_rang_atp(joueur_2, rankings)
 
     if rang_j1:
         st.info(f"🏆 Rang ATP {joueur_1} : {rang_j1}")
