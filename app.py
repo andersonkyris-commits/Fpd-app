@@ -433,11 +433,12 @@ elif sport == "Tennis 🎾":
         # SIMULATION RANKING (IMPORTANT)
         # =========================
         # sans API ranking on simule un écart logique
-        import random
-        ranking_diff = random.uniform(-15, 15)
+        if rang_j1 and rang_j2:
 
-        score1 += (15 - ranking_diff)
-        score2 += (15 + ranking_diff)
+            ecart_rang = rang_j2 - rang_j1
+
+            score1 += ecart_rang * 1.5
+            score2 -= ecart_rang * 1.5
 
         # =========================
         # PROBABILITÉS
