@@ -430,6 +430,12 @@ elif sport == "Tennis 🎾":
         # =========================
         score1 = v1 * 10
         score2 = v2 * 10
+        
+        if rang_j1:
+            score1 += max(0, 150 - rang_j1)
+
+        if rang_j2:
+            score2 += max(0, 150 - rang_j2)
 
         # =========================
         # RANKING ATP RÉEL
