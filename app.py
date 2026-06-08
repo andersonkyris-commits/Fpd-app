@@ -18,13 +18,27 @@ nom_joueur = st.text_input("Nom du joueur", "Carlos Alcaraz")
 if st.button("Rechercher joueur"):
 
     response = requests.get(
-    "https://api.balldontlie.io/atp/v1/players",
-    headers=headers
-)
+        "https://api.balldontlie.io/atp/v1/rankings",
+        headers=headers
+    )
 
-data = response.json()
+    data = response.json()
 
-st.write(data)
+    for joueur in data["data"]:
+
+        if nom_joueur.lower() in joueur["full_name"].lower():
+
+            st.success("Joueur trouvé")
+
+            st.write("Nom :", joueur["full_name"])
+            st.write("Pays :", joueur["country"])
+            st.write("Âge :", joueur["age"])
+            st.write("Taille :", joueur["height_cm"], "cm")
+            st.write("Poids :", joueur["weight_kg"], "kg")
+            st.write("Main :", joueur["plays"])
+            st.write("Professionnel depuis :", joueur["turned_pro"])
+
+            break
 
 # Configuration de la page
 st.set_page_config(page_title="FPD Pro - Expert Predictor", page_icon="📊", layout="centered")
