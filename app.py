@@ -281,47 +281,7 @@ if sport == "Football ⚽":
 # ==============================================================================
 elif sport == "Tennis 🎾":
     st.header("🎾 Analyse Tennis V7.3 (Ranking + Surface + H2H)")
-    st.subheader("🔍 Test API ATP")
-
-test_nom = st.text_input("Test joueur API", "Carlos Alcaraz")
-
-if st.button("Tester API ATP"):
-
-    response = requests.get(
-        "https://api.balldontlie.io/atp/v1/rankings",
-        headers=tennis_headers
-    )
-
-    st.write("Status:", response.status_code)
-
-    if response.status_code == 200:
-        data = response.json()
-
-        st.success("API OK")
-
-        st.write("Nombre joueurs:", len(data.get("data", [])))
-        
-    trouve = False
-
-    for joueur in data["data"]:
-
-        nom = joueur["player"]["full_name"]
-
-        if test_nom.lower() in nom.lower():
-
-            st.success("Joueur trouvé ✅")
-            st.json(joueur)
-
-            trouve = True
-            break
-
-    if not trouve:
-         st.warning("Joueur non trouvé")
     
-    else:
-        st.error("API KO")
-        st.write(response.text)
-
     # =========================
     # TOURNOIS + SURFACES
     # =========================
