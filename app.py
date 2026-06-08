@@ -291,21 +291,21 @@ if sport == "Football ⚽":
 # MODULE TENNIS ULTRA AUTOMATISÉ (TOURNOIS + SURFACES ACCORDÉES)
 # ==============================================================================
 elif sport == "Tennis 🎾":
-    st.header("🎾 Analyse Tennis V7.3 (Ranking + Surface + H2H)")
+    st.header("🎾 Analyse Tennis V7.4 (Tournois API)")
 
     tournois = recuperer_tournois()
 
     if not tournois:
         st.warning("Aucun tournoi disponible")
         st.stop()
-        
-        options_tournois = {
-            t["name"]: t for t in tournois
-        }
 
-    #==========================
+    # =========================
     # DICTIONNAIRE TOURNOI
-    #==========================
+    # =========================
+    options_tournois = {
+        t["name"]: t for t in tournois
+    }
+
     tournoi_nom = st.selectbox(
         "🏆 Tournoi ATP",
         list(options_tournois.keys())
@@ -313,9 +313,8 @@ elif sport == "Tennis 🎾":
 
     tournoi = options_tournois[tournoi_nom]
 
-    surface = tournoi.get("surface", "Inconnue")
-    categorie = tournoi.get("category", "Inconnue")
     surface = tournoi.get("surface") or "Hard"
+    categorie = tournoi.get("category") or "Inconnue"
 
     st.info(f"🏟 Surface : {surface}")
     st.info(f"🏆 Catégorie : {categorie}")
