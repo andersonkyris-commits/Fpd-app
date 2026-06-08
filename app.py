@@ -280,6 +280,7 @@ if sport == "Football ⚽":
 # ==============================================================================
 elif sport == "Tennis 🎾":
     st.header("🎾 Analyse Tennis V7.3 (Ranking + Surface + H2H)")
+    st.write("API chargée :", "Oui")
     st.subheader("🔍 Test Endpoint ATP")
 
     endpoint = st.text_input(
@@ -293,7 +294,7 @@ elif sport == "Tennis 🎾":
 
         response = requests.get(
             url,
-            headers=headers
+            headers={"Authorization": API_KEY}
         )
 
         st.write("Status :", response.status_code)
