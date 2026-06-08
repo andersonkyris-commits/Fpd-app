@@ -13,19 +13,24 @@ headers = {
     "Authorization": API_KEY
 }
 
-response = requests.get(
-    "https://api.balldontlie.io/atp/v1/players",
-    headers=headers
-)
+nom_joueur = st.text_input("Nom du joueur", "Carlos Alcaraz")
 
-st.write(response.status_code)
+if st.button("Rechercher joueur"):
 
-if response.status_code == 200:
-    st.json(response.json())
-else:
-    st.error("Erreur API")
+    response = requests.get(
+        "https://api.balldontlie.io/atp/v1/rankings",
+        headers=headers
+    )
 
-st.write("Test connexion API...")
+    data = response.json()
+
+    for joueur in data["data"]:
+
+        if nom_joueur.lower() in joueur["name"].lower():
+
+            st.write(joueur)
+
+            break
 
 # Configuration de la page
 st.set_page_config(page_title="FPD Pro - Expert Predictor", page_icon="📊", layout="centered")
