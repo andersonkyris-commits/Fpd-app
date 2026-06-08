@@ -12,9 +12,6 @@ TENNIS_API_KEY = st.secrets["TENNIS_API_KEY"]
 tennis_headers = {
     "Authorization": TENNIS_API_KEY
 }
-headers = {
-    "Authorization": API_KEY
-}
 
 @st.cache_data(ttl=3600)
 def recuperer_rang_atp(nom_joueur):
