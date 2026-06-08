@@ -318,10 +318,10 @@ elif sport == "Tennis 🎾":
     rang_j2 = recuperer_rang_atp(joueur_2)
 
     if rang_j1:
-    st.info(f"🏆 Rang ATP {joueur_1} : {rang_j1}")
+        st.info(f"🏆 Rang ATP {joueur_1} : {rang_j1}")
 
     if rang_j2:
-    st.info(f"🏆 Rang ATP {joueur_2} : {rang_j2}")
+        st.info(f"🏆 Rang ATP {joueur_2} : {rang_j2}")
     
     st.markdown("---")
 
