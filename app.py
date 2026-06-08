@@ -21,9 +21,9 @@ def recuperer_rang_atp(nom_joueur):
         headers=headers
     )
     
- data =response.json()
+    data =response.json()
 
- st.json(data)
+    st.json(data)
 
     if response.status_code != 200:
         return None
