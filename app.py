@@ -315,6 +315,7 @@ elif sport == "Tennis 🎾":
 
     surface = tournoi.get("surface", "Inconnue")
     categorie = tournoi.get("category", "Inconnue")
+    surface = tournoi.get("surface") or "Hard"
 
     st.info(f"🏟 Surface : {surface}")
     st.info(f"🏆 Catégorie : {categorie}")
