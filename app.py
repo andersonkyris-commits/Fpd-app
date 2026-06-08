@@ -311,13 +311,13 @@ elif sport == "Tennis 🎾":
     
     response = requests.get(
     "https://api.balldontlie.io/atp/v1/players",
-    headers=tennis_headers
-)
+        headers=tennis_headers
+    )
 
-data = response.json()
+    data = response.json()
 
-st.write("Players récupérés :", len(data.get("data", [])))
-st.write("Next cursor players :", data.get("meta", {}).get("next_cursor"))
+    st.write("Players récupérés :", len(data.get("data", [])))
+    st.write("Next cursor players :", data.get("meta", {}).get("next_cursor"))
 
     tournois = recuperer_tournois()
     
