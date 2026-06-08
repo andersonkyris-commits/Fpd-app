@@ -19,17 +19,6 @@ def recuperer_rang_atp(nom_joueur):
     if not nom_joueur:
         return None
 
-    response = requests.get(
-        "https://api.balldontlie.io/atp/v1/rankings",
-        headers=tennis_headers
-    )
-
-    if response.status_code != 200:
-        st.warning(f"Erreur API ATP: {response.status_code}")
-        return None
-
-    data = response.json()
-
     rankings = recuperer_tous_les_rankings()
 
     for joueur in rankings:
