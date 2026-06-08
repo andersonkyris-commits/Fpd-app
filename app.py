@@ -419,9 +419,8 @@ elif sport == "Tennis 🎾":
         st.subheader("📊 Probabilités")
 
         c1, c2 = st.columns(2)
-        c1.metric(j1, f"{p1:.1f}%")
-        c2.metric(j2, f"{p2:.1f}%")
-
+        c1.metric(joueur_1 or "Joueur 1", f"{p1:.1f}%")
+        c2.metric(joueur_2 or "Joueur 2", f"{p2:.1f}%")
         # =========================
         # CONFIANCE
         # =========================
@@ -440,9 +439,9 @@ elif sport == "Tennis 🎾":
         st.subheader("🧠 Value Bet")
 
         if value1 > 5:
-            st.success(f"Value Bet {j1} (+{value1:.1f}%)")
+            st.success(f"Value Bet {joueur_1 or 'Joueur 1'} (+{value1:.1f}%)")
         elif value2 > 5:
-            st.success(f"Value Bet {j2} (+{value2:.1f}%)")
+            st.success(f"Value Bet {joueur_2 or 'Joueur 2'} (+{value2:.1f}%)")
         else:
             st.info("Aucun value bet intéressant")
 
@@ -452,9 +451,9 @@ elif sport == "Tennis 🎾":
         st.subheader("🛡️ Recommandation")
 
         if p1 > 60:
-            reco = f"Victoire {j1}"
+            reco = f"Victoire {joueur_1 or 'Joueur 1'}"
         elif p2 > 60:
-            reco = f"Victoire {j2}"
+            reco = f"Victoire {joueur_2 or 'Joueur 2'}"
         else:
             reco = "Over 2.5 sets / match serré"
 
