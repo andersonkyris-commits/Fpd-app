@@ -73,64 +73,27 @@ sport = st.sidebar.radio("🗂️ Sélectionne le Sport", ["Football ⚽", "Tenn
 
 # Dictionnaire des Tournois Majeurs et leurs surfaces associées
 DICTIONNAIRE_TOURNOIS = {
-    # Grand Chelem
-    "Open d'Australie": "Dur",
-    "Roland-Garros": "Terre Battue",
-    "Wimbledon": "Gazon",
-    "US Open": "Dur",
-
-    # Masters 1000
-    "Indian Wells": "Dur",
-    "Miami Open": "Dur",
-    "Monte-Carlo": "Terre Battue",
-    "Madrid Open": "Terre Battue",
-    "Rome Open": "Terre Battue",
-    "Canada Masters": "Dur",
-    "Cincinnati": "Dur",
-    "Shanghai": "Dur",
-    "Paris-Bercy": "Dur",
-
-    # ATP Finals
-    "ATP Finals Turin": "Dur",
-
-    # ATP 500
-    "Barcelone": "Terre Battue",
-    "Hambourg": "Terre Battue",
-    "Queen's Club": "Gazon",
-    "Halle": "Gazon",
-    "Washington": "Dur",
-    "Tokyo": "Dur",
-    "Pékin": "Dur",
-    "Bâle": "Dur",
-    "Vienne": "Dur",
-    "Acapulco": "Dur",
-    "Dubaï": "Dur",
-
-    # ATP 250
-    "Stuttgart": "Gazon",
-    "Eastbourne": "Gazon",
-    "Mallorca": "Gazon",
-    "Doha": "Dur",
-    "Adelaide": "Dur",
-    "Brisbane": "Dur",
-    "Marseille": "Dur",
-    "Montpellier": "Dur",
-    "Los Cabos": "Dur",
-
-    # Terre battue ATP 250
-    "Buenos Aires": "Terre Battue",
-    "Santiago": "Terre Battue",
-    "Marrakech": "Terre Battue",
-    "Munich": "Terre Battue",
-    "Geneva Open": "Terre Battue",
-    "Umag": "Terre Battue",
-
-    # Autres
-    "Autre tournoi Dur": "Dur",
-    "Autre tournoi Terre Battue": "Terre Battue",
-    "Autre tournoi Gazon": "Gazon"
+    "🇦🇺 Open d'Australie (Grand Chelem)": "Dur / Indoor 🟦",
+    "🇫🇷 Roland-Garros (Grand Chelem)": "Terre Battue 🟫",
+    "🇬🇧 Wimbledon (Grand Chelem)": "Gazon 🟩",
+    "🇺🇸 US Open (Grand Chelem)": "Dur / Indoor 🟦",
+    "🇺🇸 Indian Wells (Masters 1000)": "Dur / Indoor 🟦",
+    "🇺🇸 Miami Open (Masters 1000)": "Dur / Indoor 🟦",
+    "🇲🇨 Monte-Carlo (Masters 1000)": "Terre Battue 🟫",
+    "🇪🇸 Madrid Open (Masters 1000)": "Terre Battue 🟫",
+    "🇮🇹 Rome Open (Masters 1000)": "Terre Battue 🟫",
+    "🇨🇦 Masters du Canada (Montréal/Toronto)": "Dur / Indoor 🟦",
+    "🇺🇸 Cincinnati (Masters 1000)": "Dur / Indoor 🟦",
+    "🇨🇳 Shanghai (Masters 1000)": "Dur / Indoor 🟦",
+    "🇫🇷 Paris-Bercy (Masters 1000)": "Dur / Indoor 🟦",
+    "🇮🇹 ATP Finals / Masters Turin": "Dur / Indoor 🟦",
+    "🇪🇸 Barcelone (ATP 500)": "Terre Battue 🟫",
+    "🇬🇧 Queen's Club (ATP 500)": "Gazon 🟩",
+    "🇩🇪 Halle Open (ATP 500)": "Gazon 🟩",
+    "➕ [Autre Tournoi] Dur Extérieur / Indoor": "Dur / Indoor 🟦",
+    "➕ [Autre Tournoi] Terre Battue": "Terre Battue 🟫",
+    "➕ [Autre Tournoi] Gazon / Herbe": "Gazon 🟩"
 }
-
 # Dictionnaire des spécialités de surface des joueurs
 DICTIONNAIRE_SURFACES = {
     "flavio cobolli": ["Terre Battue 🟫"],
@@ -322,13 +285,63 @@ elif sport == "Tennis 🎾":
     # TOURNOIS + SURFACES
     # =========================
     DICTIONNAIRE_TOURNOIS = {
+
+        # Grand Chelem
         "Open d'Australie": "Dur",
         "Roland-Garros": "Terre Battue",
         "Wimbledon": "Gazon",
         "US Open": "Dur",
-        "ATP 1000 - Dur": "Dur",
-        "ATP 1000 - Terre": "Terre Battue",
-        "ATP 500 - Gazon": "Gazon"
+
+        # Masters 1000
+        "Indian Wells": "Dur",
+        "Miami Open": "Dur",
+        "Monte-Carlo": "Terre Battue",
+        "Madrid Open": "Terre Battue",
+        "Rome Open": "Terre Battue",
+        "Canada Masters": "Dur",
+        "Cincinnati": "Dur",
+        "Shanghai": "Dur",
+        "Paris-Bercy": "Dur",
+
+        # ATP Finals
+        "ATP Finals Turin": "Dur",
+
+        # ATP 500
+        "Barcelone": "Terre Battue",
+        "Hambourg": "Terre Battue",
+        "Queen's Club": "Gazon",
+        "Halle": "Gazon",
+        "Washington": "Dur",
+        "Tokyo": "Dur",
+        "Pékin": "Dur",
+        "Bâle": "Dur",
+        "Vienne": "Dur",
+        "Acapulco": "Dur",
+        "Dubaï": "Dur",
+
+        # ATP 250
+        "Stuttgart": "Gazon",
+        "Eastbourne": "Gazon",
+        "Mallorca": "Gazon",
+        "Doha": "Dur",
+        "Adelaide": "Dur",
+        "Brisbane": "Dur",
+        "Marseille": "Dur",
+        "Montpellier": "Dur",
+        "Los Cabos": "Dur",
+
+        # Terre battue ATP 250
+        "Buenos Aires": "Terre Battue",
+        "Santiago": "Terre Battue",
+        "Marrakech": "Terre Battue",
+        "Munich": "Terre Battue",
+        "Geneva Open": "Terre Battue",
+        "Umag": "Terre Battue",
+
+        # Autres
+        "Autre tournoi Dur": "Dur",
+        "Autre tournoi Terre Battue": "Terre Battue",
+        "Autre tournoi Gazon": "Gazon"
     }
 
     tournoi = st.selectbox("Tournoi", list(DICTIONNAIRE_TOURNOIS.keys()))
