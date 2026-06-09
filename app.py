@@ -40,6 +40,7 @@ def recuperer_tournois():
 
     return response.json().get("data", [])
     
+@st.cache_data(ttl=3600)
 def recuperer_tous_les_rankings():
     tous_les_rankings = []
     cursor = None
@@ -52,8 +53,12 @@ def recuperer_tous_les_rankings():
 
         response = requests.get(url, headers=tennis_headers)
 
+        if response.status_code == 429:
+            st.warning("Limite API atteinte (429) → attendre 1 minute")
+            break
+
         if response.status_code != 200:
-            st.warning("Erreur API Rankings")
+            st.warning(f"Erreur API Rankings : {response.status_code}")
             break
 
         data = response.json()
