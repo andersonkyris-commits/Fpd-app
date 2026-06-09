@@ -39,10 +39,6 @@ def recuperer_tous_les_rankings():
 
         data = response.json()
         tous_les_rankings.extend(data.get("data", []))
-        st.write(
-            "Total rankings récupérés :",
-            len(tous_les_rankings)
-            )
 
         cursor = data.get("meta", {}).get("next_cursor")
 
@@ -385,8 +381,6 @@ elif sport == "Tennis 🎾":
 
     elif joueur_2 and len(joueur_2) >= 3:
         rankings = charger_rankings_safe()
-        
-        st.write("Rankings chargés :", len(rankings))
         
     rang_j1 = None
     rang_j2 = None
