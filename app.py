@@ -477,7 +477,7 @@ if sport == "Football ⚽":
 
         elif confiance >= 55:
             if p_a > p_b:
-            reco = f"Double chance : {team_a} ou Nul"
+                reco = f"Double chance : {team_a} ou Nul"
             else:
                 reco = f"Double chance : {team_b} ou Nul"
 
