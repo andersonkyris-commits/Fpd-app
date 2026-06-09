@@ -489,7 +489,8 @@ if sport == "Football ⚽":
             "Proba B": round(p_b, 1),
             "Value A": round(value_a, 1),
             "Value B": round(value_b, 1),
-            "Confiance": round(confiance, 1)
+            "Confiance": round(confiance, 1),
+            "Reco": reco
         })
 
         sauvegarder_historique(
