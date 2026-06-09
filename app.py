@@ -222,11 +222,6 @@ if sport == "Football ⚽":
         try:
             r = requests.get(url, headers=headers, timeout=10)
 
-            st.write("Status API :", r.status_code)
-
-            if r.status_code != 200:
-                return []
-
             return r.json().get("matches", [])
 
         except requests.exceptions.RequestException as e:
@@ -235,17 +230,6 @@ if sport == "Football ⚽":
 
     matchs = charger_matchs(code_compet, football_headers)
     
-    st.write("Compétition :", code_compet)
-    st.write("Nombre de matchs :", len(matchs))
-    
-    for m in matchs[:10]:
-        st.write(
-            m["utcDate"],
-            m["homeTeam"]["name"],
-            "vs",
-            m["awayTeam"]["name"]
-        )
-
     if code_compet == "MANUAL" or not matchs:
         st.warning("Mode manuel activé (données limitées)")
         col1, col2 = st.columns(2)
