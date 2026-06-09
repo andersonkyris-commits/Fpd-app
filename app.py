@@ -212,7 +212,7 @@ if sport == "Football ⚽":
             return []
         url = f"https://api.football-data.org/v4/competitions/{code}/matches?status=SCHEDULED"
         try:
-            r = requests.get(url, headers=headers)
+            r = requests.get(url, headers=football_headers)
             
             st.write("Status API :", r.status_code)
             st.write(r.text[:300])
