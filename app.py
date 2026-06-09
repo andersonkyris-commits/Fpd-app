@@ -206,26 +206,26 @@ if sport == "Football ⚽":
     compet_choisie = st.selectbox("Compétition", list(DICT_COMPETS.keys()))
     code_compet = DICT_COMPETS[compet_choisie]
 
-@st.cache_data(ttl=1800)
-def charger_matchs(code):
-    if code == "MANUAL":
-        return []
+    @st.cache_data(ttl=1800)
+    def charger_matchs(code):
+        if code == "MANUAL":
+            return []
 
-    url = f"https://api.football-data.org/v4/competitions/{code}/matches?status=SCHEDULED"
+        url = f"https://api.football-data.org/v4/competitions/{code}/matches?status=SCHEDULED"
 
-    try:
-        r = requests.get(url, headers=football_headers)
+        try:
+            r = requests.get(url, headers=football_headers)
 
-        st.write("Status API :", r.status_code)
+            st.write("Status API :", r.status_code)
 
-        if r.status_code == 200:
-             return r.json().get("matches", [])
+            if r.status_code == 200:
+                 return r.json().get("matches", [])
 
-        return []
+            return []
 
-    except Exception as e:
-        st.error(f"Erreur Football : {e}")
-        return []
+        except Exception as e:
+            st.error(f"Erreur Football : {e}")
+            return []
 
     matchs = charger_matchs(code_compet)
     
