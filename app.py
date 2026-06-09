@@ -212,57 +212,57 @@ if sport == "Football ⚽":
     compet_choisie = st.selectbox("Compétition", list(DICT_COMPETS.keys()))
     code_compet = DICT_COMPETS[compet_choisie]
      
-@st.cache_data(ttl=1800)
-def charger_matchs(code, headers):
-    if code == "MANUAL":
-        return []
+    @st.cache_data(ttl=1800)
+    def charger_matchs(code, headers):
+        if code == "MANUAL":
+            return []
 
-    url = f"https://api.football-data.org/v4/competitions/{code}/matches"
+        url = f"https://api.football-data.org/v4/competitions/{code}/matches"
 
-    try:
-        r = requests.get(url, headers=headers, timeout=10)
-        return r.json().get("matches", [])
+        try:
+            r = requests.get(url, headers=headers, timeout=10)
+            return r.json().get("matches", [])
 
-    except requests.exceptions.RequestException as e:
-        st.error(f"Erreur Football : {e}")
-        return []
-
-
-matchs = charger_matchs(code_compet, football_headers)
+        except requests.exceptions.RequestException as e:
+            st.error(f"Erreur Football : {e}")
+            return []
 
 
-if code_compet == "MANUAL" or not matchs:
-    st.warning("Mode manuel activé (données limitées)")
-    col1, col2 = st.columns(2)
-    team_a = col1.text_input("Équipe domicile", "Team A")
-    team_b = col2.text_input("Équipe extérieur", "Team B")
-    match_amical = True
+    matchs = charger_matchs(code_compet, football_headers)
 
-else:
-    match_amical = False
 
-    # TRI + TOP MATCHS
-    matchs_sorted = sorted(
-        matchs,
-        key=lambda m: m["utcDate"],
-        reverse=False
-    )
+    if code_compet == "MANUAL" or not matchs:
+        st.warning("Mode manuel activé (données limitées)")
+        col1, col2 = st.columns(2)
+        team_a = col1.text_input("Équipe domicile", "Team A")
+        team_b = col2.text_input("Équipe extérieur", "Team B")
+        match_amical = True
 
-    matchs_top = matchs_sorted[:10]
+    else:
+        match_amical = False
 
-    options = {}
-    labels = []
+        # TRI + TOP MATCHS
+        matchs_sorted = sorted(
+            matchs,
+            key=lambda m: m["utcDate"],
+            reverse=False
+        )
 
-    for m in matchs_top:
-        label = f"{m['homeTeam']['name']} vs {m['awayTeam']['name']}"
-        labels.append(label)
-        options[label] = m
+        matchs_top = matchs_sorted[:10]
 
-    selected = st.selectbox("🔥 Match le plus intéressant", labels)
-    match_data = options[selected]
+        options = {}
+        labels = []
 
-    team_a = match_data["homeTeam"]["name"]
-    team_b = match_data["awayTeam"]["name"]
+        for m in matchs_top:
+            label = f"{m['homeTeam']['name']} vs {m['awayTeam']['name']}"
+            labels.append(label)
+            options[label] = m
+
+        selected = st.selectbox("🔥 Match le plus intéressant", labels)
+        match_data = options[selected]
+
+        team_a = match_data["homeTeam"]["name"]
+        team_b = match_data["awayTeam"]["name"]
 
     st.markdown("---")
 
