@@ -8,12 +8,6 @@ import os
 import requests
 import streamlit as st
 
-FOOTBALL_API_KEY = st.secrets["FOOTBALL_API_KEY"]
-
-football_headers = {
-    "X-Auth-Token": FOOTBALL_API_KEY
-}
-
 TENNIS_API_KEY = st.secrets["TENNIS_API_KEY"]
 
 tennis_headers = {
@@ -211,6 +205,11 @@ if sport == "Football ⚽":
 
     compet_choisie = st.selectbox("Compétition", list(DICT_COMPETS.keys()))
     code_compet = DICT_COMPETS[compet_choisie]
+    
+FOOTBALL_API_KEY = st.secrets["FOOTBALL_API_KEY"]
+
+football_headers = {
+    "X-Auth-Token": FOOTBALL_API_KEY
     
     try:
         FOOTBALL_API_KEY = st.secrets["FOOTBALL_API_KEY"]
