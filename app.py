@@ -361,8 +361,24 @@ if sport == "Football ⚽":
 
         import random
 
-        base_a = 58
-        base_b = 50
+        bonus_a = 0
+        bonus_b = 0
+
+        # Type de compétition
+        if type_compet == "championnat":
+            bonus_a += 5
+            bonus_b += 5
+
+        elif type_compet == "international":
+            bonus_a += 3
+            bonus_b += 3
+
+        elif type_compet == "europe":
+            bonus_a += 4
+            bonus_b += 4
+
+        base_a = 58 + bonus_a
+        base_b = 50 + bonus_b
 
         fiabilite = 1.0
 
