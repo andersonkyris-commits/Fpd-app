@@ -27,7 +27,7 @@ def recuperer_tous_les_rankings():
         if cursor:
             url += f"?cursor={cursor}"
 
-    st.write("Cursor actuel :", cursor)
+        st.write("Cursor actuel :", cursor)
        
         response = requests.get(url, headers=tennis_headers)
 
