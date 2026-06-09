@@ -358,10 +358,17 @@ elif sport == "Tennis 🎾":
     joueur_1 = col_j1.text_input("Nom du Joueur 1")
     joueur_2 = col_j2.text_input("Nom du Joueur 2")
 
-    rankings = charger_rankings_safe()
+    rankings = []
+
+    if joueur_1 or joueur_2:
+        rankings = charger_rankings_safe()
     
-    rang_j1 = recuperer_rang_atp(joueur_1, rankings)
-    rang_j2 = recuperer_rang_atp(joueur_2, rankings)
+    rang_j1 = None
+    rang_j2 = None
+
+    if rankings:
+        rang_j1 = recuperer_rang_atp(joueur_1, rankings)
+        rang_j2 = recuperer_rang_atp(joueur_2, rankings)
 
     if rang_j1:
         st.info(f"🏆 Rang ATP {joueur_1} : {rang_j1}")
