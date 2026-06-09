@@ -69,15 +69,40 @@ def recuperer_rang_atp(nom_joueur, rankings):
 @st.cache_data(ttl=3600)
 def recuperer_tournois():
 
-    url = "https://api.balldontlie.io/atp/v1/tournaments"
+    tous_les_tournois = []
+    cursor = None
 
-    response = requests.get(url, headers=tennis_headers)
+    while True:
 
-    if response.status_code != 200:
-        st.warning(f"Erreur API Tournois : {response.status_code}")
-        return []
+        url = "https://api.balldontlie.io/atp/v1/tournaments"
 
-    return response.json().get("data", [])
+        if cursor:
+            url += f"?cursor={cursor}"
+
+        response = requests.get(
+            url,
+            headers=tennis_headers
+        )
+
+        if response.status_code != 200:
+            st.warning(f"Erreur API Tournois : {response.status_code}")
+            break
+
+        data = response.json()
+
+        tous_les_tournois.extend(
+            data.get("data", [])
+        )
+
+        cursor = (
+            data.get("meta", {})
+                .get("next_cursor")
+        )
+
+        if not cursor:
+            break
+
+    return tous_les_tournois
 
 # =========================
 # HISTORIQUE PERMANENT
