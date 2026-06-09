@@ -241,13 +241,13 @@ if sport == "Football ⚽":
         options = {}
         labels = []
 
-        for m in matchs[:20]:
-            label = f"{m['homeTeam']['name']} vs {m['awayTeam']['name']}"
-            labels.append(label)
-            options[label] = m
+    for m in matchs_top:
+        label = f"{m['homeTeam']['name']} vs {m['awayTeam']['name']}"
+        labels.append(label)
+        options[label] = m
 
-        selected = st.selectbox("Match", labels)
-        match_data = options[selected]
+    selected = st.selectbox("🔥 Match le plus intéressant", labels)
+    match_data = options[selected]
 
         team_a = match_data["homeTeam"]["name"]
         team_b = match_data["awayTeam"]["name"]
