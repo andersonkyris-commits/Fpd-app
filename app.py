@@ -1,7 +1,7 @@
 import streamlit as st
 import requests
 import math
-from datetime import datetime
+from datetime import datetime, timezone
 import time
 import json
 import os
@@ -290,6 +290,34 @@ if sport == "Football ⚽":
         p_a = (prob_a / total) * 100 * fiabilite
         p_b = (prob_b / total) * 100 * fiabilite
         p_n = 100 - (p_a + p_b)
+    
+    def score_match(match, code_compet):
+        score = 0
+
+        # 1. importance compétition
+        compet_bonus = {
+            "CL": 30,
+            "WC": 40,
+            "PL": 35,
+            "SA": 25,
+            "PD": 25,
+            "BL1": 25,
+            "FL1": 25
+        }
+
+        score += compet_bonus.get(code_compet, 10)
+
+        # 2. match aujourd’hui
+        try:
+            match_date = datetime.fromisoformat(match["utcDate"].replace("Z", ""))
+            now = datetime.now(timezone.utc)
+
+            if match_date.date() == now.date():
+                score += 50
+        except:
+            pass
+
+        return score
 
         # =========================
         # VALUE BET
