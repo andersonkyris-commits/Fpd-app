@@ -39,6 +39,10 @@ def recuperer_tous_les_rankings():
 
         data = response.json()
         tous_les_rankings.extend(data.get("data", []))
+        st.write(
+            "Total rankings récupérés :",
+            len(tous_les_rankings)
+            )
 
         cursor = data.get("meta", {}).get("next_cursor")
 
@@ -52,6 +56,7 @@ def charger_rankings_safe():
         return st.session_state.rankings
 
     data = recuperer_tous_les_rankings()
+    
     st.session_state.rankings = data
     return data
 
