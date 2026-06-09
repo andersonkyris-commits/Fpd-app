@@ -188,13 +188,6 @@ def verifier_excellence(nom_joueur, surface_choisie):
 # ==============================================================================
 if sport == "Football ⚽":
     st.header("⚽ Analyse Football V7.2 (Automatisée + Fiabilité)")
-    for m in matchs[:10]:
-        st.write(
-            m["utcDate"],
-            m["homeTeam"]["name"],
-            "vs",
-            m["awayTeam"]["name"]
-        )
     
     DICT_COMPETS = {
         "Ligue des Champions (Europe)": "CL",
@@ -226,6 +219,13 @@ if sport == "Football ⚽":
             return []
 
     matchs = charger_matchs(code_compet)
+    for m in matchs[:10]:
+        st.write(
+            m["utcDate"],
+            m["homeTeam"]["name"],
+            "vs",
+            m["awayTeam"]["name"]
+        )
 
     if code_compet == "MANUAL" or not matchs:
         st.warning("Mode manuel activé (données limitées)")
