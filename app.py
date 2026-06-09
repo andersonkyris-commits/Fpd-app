@@ -12,6 +12,7 @@ FOOTBALL_API_KEY = st.secrets["FOOTBALL_API_KEY"]
 
 football_headers = {
     "X-Auth-Token": FOOTBALL_API_KEY
+}
 
 TENNIS_API_KEY = st.secrets["TENNIS_API_KEY"]
 
