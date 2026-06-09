@@ -219,6 +219,10 @@ if sport == "Football ⚽":
             return []
 
     matchs = charger_matchs(code_compet)
+    
+    st.write("Compétition :", code_compet)
+    st.write("Nombre de matchs :", len(matchs))
+    
     for m in matchs[:10]:
         st.write(
             m["utcDate"],
