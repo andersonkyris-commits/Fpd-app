@@ -8,6 +8,11 @@ import os
 import requests
 import streamlit as st
 
+FOOTBALL_API_KEY = st.secrets["FOOTBALL_API_KEY"]
+
+football_headers = {
+    "X-Auth-Token": FOOTBALL_API_KEY
+
 TENNIS_API_KEY = st.secrets["TENNIS_API_KEY"]
 
 tennis_headers = {
@@ -205,20 +210,14 @@ if sport == "Football ⚽":
 
     compet_choisie = st.selectbox("Compétition", list(DICT_COMPETS.keys()))
     code_compet = DICT_COMPETS[compet_choisie]
+     
+    try:
+        FOOTBALL_API_KEY = st.secrets["FOOTBALL_API_KEY"]
+        st.write("Clé Football détectée")
+    except Exception as e:
+        st.error(f"Clé Football absente : {e}")
     
-FOOTBALL_API_KEY = st.secrets["FOOTBALL_API_KEY"]
-
-football_headers = {
-    "X-Auth-Token": FOOTBALL_API_KEY
-}
-    
-        try:
-            FOOTBALL_API_KEY = st.secrets["FOOTBALL_API_KEY"]
-            st.write("Clé Football détectée")
-        except Exception as e:
-            st.error(f"Clé Football absente : {e}")
-    
-        st.write("Football headers existe :", "football_headers" in globals())
+    st.write("Football headers existe :", "football_headers" in globals())
 
     @st.cache_data(ttl=1800)
     def charger_matchs(code):
