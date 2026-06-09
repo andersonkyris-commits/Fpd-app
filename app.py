@@ -8,16 +8,16 @@ import os
 import requests
 import streamlit as st
 
-FOOTBALL_API_KEY = st.secrets["FOOTBALL_API_KEY"]
-
-football_headers = {
-    "X-Auth-Token": FOOTBALL_API_KEY
-}
-
 TENNIS_API_KEY = st.secrets["TENNIS_API_KEY"]
 
 tennis_headers = {
     "Authorization": TENNIS_API_KEY
+}
+
+FOOTBALL_API_KEY = st.secrets["FOOTBALL_API_KEY"]
+
+football_headers = {
+    "X-Auth-Token": FOOTBALL_API_KEY
 }
 
 @st.cache_data(ttl=3600)
@@ -221,37 +221,27 @@ if sport == "Football ⚽":
     st.write("Football headers existe :", "football_headers" in globals())
 
     @st.cache_data(ttl=1800)
-    def charger_matchs(code):
-
+    def charger_matchs(code, headers):
         if code == "MANUAL":
             return []
 
-        url = f"https://api.football-data.org/v4/competitions/{code}/matches?status=SCHEDULED"
-
-        st.write("URL :", url)
+        url = f"https://api.football-data.org/v4/competitions/{code}/matches"
 
         try:
-            r = requests.get(
-                url,
-                headers=football_headers,
-                timeout=15
-            )
+            r = requests.get(url, headers=headers, timeout=10)
 
             st.write("Status API :", r.status_code)
 
             if r.status_code != 200:
-                st.write(r.text)
+                return []
 
-            if r.status_code == 200:
-                return r.json().get("matches", [])
+            return r.json().get("matches", [])
 
-            return []
-
-        except Exception as e:
+        except requests.exceptions.RequestException as e:
             st.error(f"Erreur Football : {e}")
             return []
 
-    matchs = charger_matchs(code_compet)
+    matchs = charger_matchs(code_compet, football_headers)
     
     st.write("Compétition :", code_compet)
     st.write("Nombre de matchs :", len(matchs))
