@@ -343,8 +343,6 @@ elif sport == "Tennis 🎾":
 
     rankings = st.session_state.rankings
 
-    rankings = recuperer_tous_les_rankings()
-    
     rang_j1 = recuperer_rang_atp(joueur_1, rankings)
     rang_j2 = recuperer_rang_atp(joueur_2, rankings)
 
