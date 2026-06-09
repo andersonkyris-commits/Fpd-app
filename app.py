@@ -14,33 +14,6 @@ tennis_headers = {
 }
 
 @st.cache_data(ttl=3600)
-def recuperer_rang_atp(nom_joueur, rankings):
-
-    if not nom_joueur:
-        return None
-
-    nom_joueur = nom_joueur.lower()
-
-    for joueur in rankings:
-        if nom_joueur in joueur["player"]["full_name"].lower():
-            return joueur["rank"]
-
-    return None
-
-@st.cache_data(ttl=3600)
-def recuperer_tournois():
-
-    url = "https://api.balldontlie.io/atp/v1/tournaments"
-
-    response = requests.get(url, headers=tennis_headers)
-
-    if response.status_code != 200:
-        st.warning(f"Erreur API Tournois : {response.status_code}")
-        return []
-
-    return response.json().get("data", [])
-    
-@st.cache_data(ttl=3600)
 def recuperer_tous_les_rankings():
     tous_les_rankings = []
     cursor = None
@@ -71,6 +44,32 @@ def recuperer_tous_les_rankings():
             break
 
     return tous_les_rankings
+
+def recuperer_rang_atp(nom_joueur, rankings):
+
+    if not nom_joueur:
+        return None
+
+    nom = nom_joueur.lower().strip()
+
+    for joueur in rankings:
+        if nom in joueur["player"]["full_name"].lower():
+            return joueur["rank"]
+
+    return None
+
+@st.cache_data(ttl=3600)
+def recuperer_tournois():
+
+    url = "https://api.balldontlie.io/atp/v1/tournaments"
+
+    response = requests.get(url, headers=tennis_headers)
+
+    if response.status_code != 200:
+        st.warning(f"Erreur API Tournois : {response.status_code}")
+        return []
+
+    return response.json().get("data", [])
 
 # =========================
 # HISTORIQUE PERMANENT
@@ -336,11 +335,16 @@ elif sport == "Tennis 🎾":
     # =========================
     col_j1, col_j2 = st.columns(2)
 
-    rankings = recuperer_tous_les_rankings()
-
     joueur_1 = col_j1.text_input("Nom du Joueur 1")
     joueur_2 = col_j2.text_input("Nom du Joueur 2")
 
+    if "rankings" not in st.session_state:
+        st.session_state.rankings = recuperer_tous_les_rankings()
+
+    rankings = st.session_state.rankings
+
+    rankings = recuperer_tous_les_rankings()
+    
     rang_j1 = recuperer_rang_atp(joueur_1, rankings)
     rang_j2 = recuperer_rang_atp(joueur_2, rankings)
 
