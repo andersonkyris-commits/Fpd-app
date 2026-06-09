@@ -210,17 +210,22 @@ if sport == "Football ⚽":
     def charger_matchs(code):
         if code == "MANUAL":
             return []
+
         url = f"https://api.football-data.org/v4/competitions/{code}/matches?status=SCHEDULED"
+
         try:
             r = requests.get(url, headers=football_headers)
-            
+
             st.write("Status API :", r.status_code)
-            st.write(r.text[:300])
-            
+
             if r.status_code == 200:
                 return r.json().get("matches", [])
-        except:
+
             return []
+
+    except Exception as e:
+        st.error(f"Erreur Football : {e}")
+        return []
 
     matchs = charger_matchs(code_compet)
     
