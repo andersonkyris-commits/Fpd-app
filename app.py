@@ -193,104 +193,170 @@ def verifier_excellence(nom_joueur, surface_choisie):
 # MODULE FOOTBALL (STABLE)
 # ==============================================================================
 if sport == "Football ⚽":
-    st.header("⚽ Analyse Football V7.2 (Automatisée + Fiabilité)")
-    
+
+    st.header("⚽ Analyse Football V7.3")
+
     DICT_COMPETS = {
-        "Ligue des Champions (Europe)": "CL",
-        "Coupe du Monde (FIFA)": "WC",
-        "Championnat d'Europe (Euro)": "EC",
-        "Premier League (Angleterre)": "PL",
-        "Ligue 1 (France)": "FL1",
-        "La Liga (Espagne)": "PD",
-        "Serie A (Italie)": "SA",
-        "Bundesliga (Allemagne)": "BL1",
-        "Eredivisie (Pays-Bas)": "DED",
-        "Primeira Liga (Portugal)": "PPL",
-        "➕ [MODE MANUEL]": "MANUAL"
+        "Ligue des Champions": "CL",
+        "Coupe du Monde": "WC",
+        "Euro": "EC",
+        "Premier League": "PL",
+        "Ligue 1": "FL1",
+        "La Liga": "PD",
+        "Serie A": "SA",
+        "Bundesliga": "BL1",
+        "Mode Manuel": "MANUAL"
     }
 
-    compet_choisie = st.selectbox("Compétition", list(DICT_COMPETS.keys()))
+    compet_choisie = st.selectbox(
+        "Compétition",
+        list(DICT_COMPETS.keys())
+    )
+
     code_compet = DICT_COMPETS[compet_choisie]
-     
+
     @st.cache_data(ttl=1800)
-    def charger_matchs(code, headers):
+    def charger_matchs(code):
+
         if code == "MANUAL":
             return []
 
-        url = f"https://api.football-data.org/v4/competitions/{code}/matches"
+        url = (
+            f"https://api.football-data.org/v4/"
+            f"competitions/{code}/matches"
+        )
 
         try:
-            r = requests.get(url, headers=headers, timeout=10)
+
+            r = requests.get(
+                url,
+                headers=football_headers,
+                timeout=10
+            )
+
+            if r.status_code != 200:
+                return []
+
             return r.json().get("matches", [])
 
-        except requests.exceptions.RequestException as e:
+        except Exception as e:
             st.error(f"Erreur Football : {e}")
             return []
 
-
-    matchs = charger_matchs(code_compet, football_headers)
-
+    matchs = charger_matchs(code_compet)
 
     if code_compet == "MANUAL" or not matchs:
-        st.warning("Mode manuel activé (données limitées)")
+
+        st.warning("Mode manuel")
+
         col1, col2 = st.columns(2)
-        team_a = col1.text_input("Équipe domicile", "Team A")
-        team_b = col2.text_input("Équipe extérieur", "Team B")
+
+        team_a = col1.text_input(
+            "Équipe domicile",
+            "Team A"
+        )
+
+        team_b = col2.text_input(
+            "Équipe extérieur",
+            "Team B"
+        )
+
         match_amical = True
 
     else:
+
         match_amical = False
 
-        # TRI + TOP MATCHS
-        matchs_sorted = sorted(
-            matchs,
-            key=lambda m: m["utcDate"],
-            reverse=False
-        )
+        # Matchs à venir uniquement
+        maintenant = datetime.now(timezone.utc)
 
-        matchs_top = matchs_sorted[:10]
+        matchs_futurs = []
+
+        for m in matchs:
+
+            try:
+                date_match = datetime.fromisoformat(
+                    m["utcDate"].replace("Z", "+00:00")
+                )
+
+                if date_match >= maintenant:
+                    matchs_futurs.append(m)
+
+            except:
+                pass
+
+        # Tri chronologique
+        matchs_futurs.sort(
+            key=lambda x: x["utcDate"]
+        )
 
         options = {}
         labels = []
 
-        for m in matchs_top:
-            label = f"{m['homeTeam']['name']} vs {m['awayTeam']['name']}"
+        for m in matchs_futurs[:20]:
+
+            label = (
+                f"{m['homeTeam']['name']} "
+                f"vs "
+                f"{m['awayTeam']['name']}"
+            )
+
             labels.append(label)
             options[label] = m
 
-        selected = st.selectbox("🔥 Match le plus intéressant", labels)
-        match_data = options[selected]
+        if labels:
 
-        team_a = match_data["homeTeam"]["name"]
-        team_b = match_data["awayTeam"]["name"]
+            selected = st.selectbox(
+                "🔥 Choix du match",
+                labels
+            )
+
+            match_data = options[selected]
+
+            team_a = match_data["homeTeam"]["name"]
+            team_b = match_data["awayTeam"]["name"]
+
+        else:
+
+            st.warning("Aucun match à venir")
+            st.stop()
 
     st.markdown("---")
 
-    st.subheader("💰 Cotes Bet261")
+    st.subheader("💰 Cotes")
+
     c1, c2, c3 = st.columns(3)
-    cote_a = c1.number_input("Cote domicile", min_value=1.01, value=2.0)
-    cote_n = c2.number_input("Cote nul", min_value=1.01, value=3.2)
-    cote_b = c3.number_input("Cote extérieur", min_value=1.01, value=3.5)
 
-    if st.button("📊 Lancer analyse Football V7.2"):
+    cote_a = c1.number_input(
+        "Cote domicile",
+        min_value=1.01,
+        value=2.00
+    )
 
-        # =========================
-        # SCORE BASE AUTOMATIQUE
-        # =========================
-        base_a = 50
+    cote_n = c2.number_input(
+        "Cote nul",
+        min_value=1.01,
+        value=3.20
+    )
+
+    cote_b = c3.number_input(
+        "Cote extérieur",
+        min_value=1.01,
+        value=3.50
+    )
+
+    if st.button("📊 Analyser"):
+
+        import random
+
+        base_a = 58
         base_b = 50
 
-        # Avantage domicile
-        base_a += 8
-
-        # Compétition fiabilité
         fiabilite = 1.0
+
         if match_amical:
             fiabilite = 0.70
-            st.warning("⚠ Match amical détecté → fiabilité réduite")
 
-        # Poisson simplifié (simulation buts)
-        import random
         att_a = random.uniform(0.8, 1.8)
         att_b = random.uniform(0.8, 1.8)
 
@@ -301,51 +367,18 @@ if sport == "Football ⚽":
 
         p_a = (prob_a / total) * 100 * fiabilite
         p_b = (prob_b / total) * 100 * fiabilite
-        p_n = 100 - (p_a + p_b)
-    
-    def score_match(match, code_compet):
-        score = 0
+        p_n = 100 - p_a - p_b
 
-        # 1. importance compétition
-        compet_bonus = {
-            "CL": 30,
-            "WC": 40,
-            "PL": 35,
-            "SA": 25,
-            "PD": 25,
-            "BL1": 25,
-            "FL1": 25
-        }
-
-        score += compet_bonus.get(code_compet, 10)
-
-        # 2. match aujourd’hui
-        try:
-            match_date = datetime.fromisoformat(match["utcDate"].replace("Z", ""))
-            now = datetime.now(timezone.utc)
-
-            if match_date.date() == now.date():
-                score += 50
-        except:
-            pass
-
-        return score
-
-        # =========================
-        # VALUE BET
-        # =========================
         imp_a = (1 / cote_a) * 100
         imp_b = (1 / cote_b) * 100
 
         value_a = p_a - imp_a
         value_b = p_b - imp_b
 
-        # =========================
-        # AFFICHAGE
-        # =========================
         st.subheader("📊 Résultat")
 
         col1, col2, col3 = st.columns(3)
+
         col1.metric(team_a, f"{p_a:.1f}%")
         col2.metric("Nul", f"{p_n:.1f}%")
         col3.metric(team_b, f"{p_b:.1f}%")
@@ -353,27 +386,31 @@ if sport == "Football ⚽":
         st.subheader("🧠 Value Bet")
 
         if value_a > 5:
-            st.success(f"Value Bet DOMICILE (+{value_a:.1f}%)")
+            st.success(
+                f"Value Bet DOMICILE (+{value_a:.1f}%)"
+            )
+
         elif value_b > 5:
-            st.success(f"Value Bet EXTÉRIEUR (+{value_b:.1f}%)")
+            st.success(
+                f"Value Bet EXTÉRIEUR (+{value_b:.1f}%)"
+            )
+
         else:
-            st.info("Aucun value bet intéressant")
+            st.info(
+                "Aucun value bet intéressant"
+            )
 
-        # =========================
-        # CONFIANCE
-        # =========================
-        confidence = (p_a if p_a > p_b else p_b)
+        confiance = max(p_a, p_b)
 
-        if confidence > 65:
+        if confiance > 65:
             st.success("🟢 Confiance élevée")
-        elif confidence > 55:
+
+        elif confiance > 55:
             st.warning("🟡 Confiance moyenne")
+
         else:
             st.error("🔴 Match risqué")
 
-        # =========================
-        # HISTORIQUE
-        # =========================
         st.session_state.historique_paris.append({
             "Sport": "Football ⚽",
             "Match": f"{team_a} vs {team_b}",
@@ -381,10 +418,12 @@ if sport == "Football ⚽":
             "Proba B": round(p_b, 1),
             "Value A": round(value_a, 1),
             "Value B": round(value_b, 1),
-            "Confiance": round(confidence, 1)
+            "Confiance": round(confiance, 1)
         })
 
-        sauvegarder_historique(st.session_state.historique_paris)
+        sauvegarder_historique(
+            st.session_state.historique_paris
+        )
         
 # ==============================================================================
 # MODULE TENNIS ULTRA AUTOMATISÉ (TOURNOIS + SURFACES ACCORDÉES)
