@@ -214,6 +214,17 @@ if sport == "Football ⚽":
     )
 
     code_compet = DICT_COMPETS[compet_choisie]
+    if code_compet in ["PL", "FL1", "PD", "SA", "BL1"]:
+        type_compet = "championnat"
+
+    elif code_compet == "CL":
+        type_compet = "europe"
+
+    elif code_compet in ["WC", "EC"]:
+        type_compet = "international"
+
+    else:
+        type_compet = "autre"
 
     @st.cache_data(ttl=1800)
     def charger_matchs(code):
@@ -244,6 +255,7 @@ if sport == "Football ⚽":
             return []
 
     matchs = charger_matchs(code_compet)
+    st.write("Type compétition :", type_compet)
 
     if code_compet == "MANUAL" or not matchs:
 
