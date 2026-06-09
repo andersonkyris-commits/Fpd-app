@@ -30,7 +30,6 @@ def recuperer_tous_les_rankings():
         response = requests.get(url, headers=tennis_headers)
 
         if response.status_code == 429:
-            st.warning("API saturée → pause automatique")
             break
 
         if response.status_code != 200:
@@ -314,6 +313,7 @@ if sport == "Football ⚽":
 # ==============================================================================
 elif sport == "Tennis 🎾":
     st.header("🎾 Analyse Tennis V7.4 (Tournois API)")
+    st.write("Rankings chargés :", len(rankings))
     
     try:
         r = requests.get(
