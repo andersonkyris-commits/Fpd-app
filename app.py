@@ -249,9 +249,6 @@ if sport == "Football ⚽":
     selected = st.selectbox("🔥 Match le plus intéressant", labels)
     match_data = options[selected]
 
-        team_a = match_data["homeTeam"]["name"]
-        team_b = match_data["awayTeam"]["name"]
-
     st.markdown("---")
 
     st.subheader("💰 Cotes Bet261")
