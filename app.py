@@ -379,6 +379,32 @@ if sport == "Football ⚽":
 
         base_a = 58 + bonus_a
         base_b = 50 + bonus_b
+       
+        # Force des équipes
+
+        FORCE_EQUIPES = {
+            "France": 95,
+            "Argentine": 96,
+            "Espagne": 94,
+            "Angleterre": 93,
+            "Brésil": 92,
+            "Portugal": 91,
+            "Allemagne": 90,
+
+            "Real Madrid": 96,
+            "Manchester City": 95,
+            "Bayern Munich": 94,
+            "PSG": 92,
+            "Liverpool": 92,
+            "Barcelona": 91,
+            "Arsenal": 90
+        }
+
+        if team_a in FORCE_EQUIPES:
+            base_a += FORCE_EQUIPES[team_a] / 5
+
+        if team_b in FORCE_EQUIPES:
+            base_b += FORCE_EQUIPES[team_b] / 5
 
         fiabilite = 1.0
 
@@ -438,6 +464,23 @@ if sport == "Football ⚽":
 
         else:
             st.error("🔴 Match risqué")
+
+            st.subheader("🎯 Recommandation")
+
+        if confiance >= 65:
+            if p_a > p_b:
+                st.success(f"Victoire {team_a}")
+            else:
+                st.success(f"Victoire {team_b}")
+
+        elif confiance >= 55:
+            if p_a > p_b:
+                st.info(f"Double chance : {team_a} ou Nul")
+            else:
+                st.info(f"Double chance : {team_b} ou Nul")
+
+        else:
+            st.warning("Match à éviter")
 
         st.session_state.historique_paris.append({
             "Sport": "Football ⚽",
