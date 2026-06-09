@@ -27,7 +27,7 @@ def recuperer_tous_les_rankings():
         if cursor:
             url += f"?cursor={cursor}"
 
-        st.write("Cursor actuel :", cursor)
+        # st.write("Cursor actuel :", cursor)
        
         response = requests.get(url, headers=tennis_headers)
 
@@ -375,8 +375,12 @@ elif sport == "Tennis 🎾":
 
     rankings = []
 
-    if joueur_1 or joueur_2:
+    if joueur_1 and len(joueur_1) >= 3:
         rankings = charger_rankings_safe()
+
+    elif joueur_2 and len(joueur_2) >= 3:
+        rankings = charger_rankings_safe()
+        
         st.write("Rankings chargés :", len(rankings))
         
     rang_j1 = None
