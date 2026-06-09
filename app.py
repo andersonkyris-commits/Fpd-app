@@ -347,7 +347,8 @@ elif sport == "Tennis 🎾":
     joueur_1 = col_j1.text_input("Nom du Joueur 1")
     joueur_2 = col_j2.text_input("Nom du Joueur 2")
 
-    rankings = charger_rankings_safe()
+    # rankings = charger_rankings_safe()
+    rankings = []
     
     rang_j1 = recuperer_rang_atp(joueur_1, rankings)
     rang_j2 = recuperer_rang_atp(joueur_2, rankings)
