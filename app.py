@@ -315,6 +315,17 @@ if sport == "Football ⚽":
 elif sport == "Tennis 🎾":
     st.header("🎾 Analyse Tennis V7.4 (Tournois API)")
     
+    try:
+        r = requests.get(
+            "https://api.balldontlie.io/atp/v1/rankings",
+            headers=tennis_headers
+        )
+
+        st.write("Status Rankings :", r.status_code)
+
+    except Exception as e:
+        st.write("Erreur :", e)
+
     tournois = recuperer_tournois()
     
     if not tournois:
