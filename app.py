@@ -469,18 +469,23 @@ if sport == "Football ⚽":
 
         if confiance >= 65:
             if p_a > p_b:
-                st.success(f"Victoire {team_a}")
+                reco = f"Victoire {team_a}"
             else:
-                st.success(f"Victoire {team_b}")
+                reco = f"Victoire {team_b}"
+
+            st.success(reco)
 
         elif confiance >= 55:
             if p_a > p_b:
-                st.info(f"Double chance : {team_a} ou Nul")
+            reco = f"Double chance : {team_a} ou Nul"
             else:
-                st.info(f"Double chance : {team_b} ou Nul")
+                reco = f"Double chance : {team_b} ou Nul"
+
+            st.info(reco)
 
         else:
-            st.warning("Match à éviter")
+            reco = "Match à éviter"
+            st.warning(reco)
 
         st.session_state.historique_paris.append({
             "Sport": "Football ⚽",
