@@ -29,7 +29,7 @@ def recuperer_tous_les_rankings():
 
     st.write("Cursor actuel :", cursor)
        
-    response = requests.get(url, headers=tennis_headers)
+        response = requests.get(url, headers=tennis_headers)
 
         if response.status_code == 429:
             break
