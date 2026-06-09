@@ -343,15 +343,6 @@ elif sport == "Tennis 🎾":
     
     tournois = recuperer_tournois()
     
-    for t in tournois:
-        st.write(
-            t["name"],
-            "-",
-            t.get("surface"),
-            "-",
-            t.get("season")
-        )
-    
     if not tournois:
         st.warning("Aucun tournoi disponible")
         st.stop()
