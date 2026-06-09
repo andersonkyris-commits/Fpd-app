@@ -313,7 +313,6 @@ if sport == "Football ⚽":
 # ==============================================================================
 elif sport == "Tennis 🎾":
     st.header("🎾 Analyse Tennis V7.4 (Tournois API)")
-    st.write("Rankings chargés :", len(rankings))
     
     try:
         r = requests.get(
@@ -362,7 +361,8 @@ elif sport == "Tennis 🎾":
 
     if joueur_1 or joueur_2:
         rankings = charger_rankings_safe()
-    
+        st.write("Rankings chargés :", len(rankings))
+        
     rang_j1 = None
     rang_j2 = None
 
