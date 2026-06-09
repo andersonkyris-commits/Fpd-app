@@ -2,6 +2,7 @@ import streamlit as st
 import requests
 import math
 from datetime import datetime
+import time
 import json
 import os
 import requests
@@ -15,6 +16,8 @@ tennis_headers = {
 
 @st.cache_data(ttl=3600)
 def recuperer_tous_les_rankings():
+    time.sleep(0.5)  # petit buffer anti spam
+
     tous_les_rankings = []
     cursor = None
 
@@ -27,15 +30,13 @@ def recuperer_tous_les_rankings():
         response = requests.get(url, headers=tennis_headers)
 
         if response.status_code == 429:
-            st.warning("Limite API atteinte (429) → attendre 1 minute")
+            st.warning("API saturée → pause automatique")
             break
 
         if response.status_code != 200:
-            st.warning(f"Erreur API Rankings : {response.status_code}")
             break
 
         data = response.json()
-
         tous_les_rankings.extend(data.get("data", []))
 
         cursor = data.get("meta", {}).get("next_cursor")
@@ -44,6 +45,14 @@ def recuperer_tous_les_rankings():
             break
 
     return tous_les_rankings
+    
+def charger_rankings_safe():
+    if "rankings" in st.session_state:
+        return st.session_state.rankings
+
+    data = recuperer_tous_les_rankings()
+    st.session_state.rankings = data
+    return data
 
 def recuperer_rang_atp(nom_joueur, rankings):
 
@@ -338,11 +347,8 @@ elif sport == "Tennis 🎾":
     joueur_1 = col_j1.text_input("Nom du Joueur 1")
     joueur_2 = col_j2.text_input("Nom du Joueur 2")
 
-    if "rankings" not in st.session_state:
-        st.session_state.rankings = recuperer_tous_les_rankings()
-
-    rankings = st.session_state.rankings
-
+    rankings = charger_rankings_safe()
+    
     rang_j1 = recuperer_rang_atp(joueur_1, rankings)
     rang_j2 = recuperer_rang_atp(joueur_2, rankings)
 
