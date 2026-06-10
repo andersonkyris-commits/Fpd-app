@@ -238,7 +238,7 @@ if sport == "Football ⚽":
             f"competitions/{code}/matches"
         )
 
-        try:all
+        try:
             r = requests.get(
                 url,
                 headers=football_headers,
