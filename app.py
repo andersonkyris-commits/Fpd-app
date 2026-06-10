@@ -389,6 +389,15 @@ def recuperer_rang_fifa(equipe):
 
         bonus_a = 0
         bonus_b = 0
+        
+        rang_a = recuperer_rang_fifa(team_a)
+        rang_b = recuperer_rang_fifa(team_b)
+
+        if rang_a:
+            st.info(f"🏆 Rang FIFA {team_a} : {rang_a}")
+
+        if rang_b:
+            st.info(f"🏆 Rang FIFA {team_b} : {rang_b}")
 
         # Type de compétition
         if type_compet == "championnat":
