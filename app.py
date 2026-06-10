@@ -209,6 +209,32 @@ if sport == "Football ⚽":
         "Mode Manuel": "MANUAL"
     }
 
+    FIFA_RANKING = {
+        "Argentina": 1,
+        "France": 2,
+        "Spain": 3,
+        "England": 4,
+        "Brazil": 5,
+        "Portugal": 6,
+        "Netherlands": 7,
+        "Belgium": 8,
+        "Italy": 9,
+        "Germany": 10,
+        "Morocco": 12,
+        "Croatia": 13,
+        "Uruguay": 14,
+        "Colombia": 15,
+        "Japan": 16,
+        "USA": 17,
+        "Mexico": 18,
+        "Senegal": 19,
+        "Switzerland": 20,
+        "Denmark": 21
+  }
+    
+def recuperer_rang_fifa(equipe):
+    return FIFA_RANKING.get(equipe)
+    
     compet_choisie = st.selectbox(
         "Compétition",
         list(DICT_COMPETS.keys())
