@@ -781,14 +781,64 @@ elif sport == "PMU 🐎":
     # BUTTON ANALYSE
     # =========================
     if st.button("📊 Analyser PMU"):
-        
-        proba = (1 / cote) * 100
-        
-        st.metric(
-            "Probabilité estimée",
-            f"{proba:.1f}%"
-        )
 
+    proba = (1 / cote) * 100
+
+    st.metric(
+        "Probabilité estimée",
+        f"{proba:.1f}%"
+    )
+
+    # =========================
+    # CONFIANCE
+    # =========================
+
+    if proba >= 40:
+        confiance = "🟢 Élevée"
+
+    elif proba >= 20:
+        confiance = "🟡 Moyenne"
+
+    else:
+        confiance = "🔴 Faible"
+
+    st.subheader("📈 Niveau de confiance")
+    st.write(confiance)
+
+    # =========================
+    # RECOMMANDATION
+    # =========================
+
+    if proba >= 40:
+        recommandation = "🎯 Favori à jouer"
+
+    elif proba >= 20:
+        recommandation = "🐎 Outsider intéressant"
+
+    else:
+        recommandation = "⚠ Pari risqué"
+
+    st.subheader("🛡️ Recommandation")
+    st.success(recommandation)
+
+    # =========================
+    # HISTORIQUE
+    # =========================
+
+    st.session_state.historique_paris.append({
+        "Sport": "PMU 🐎",
+        "Course": course,
+        "Cheval": cheval,
+        "Cote": cote,
+        "Probabilité": round(proba, 1),
+        "Confiance": confiance,
+        "Recommandation": recommandation
+    })
+
+    sauvegarder_historique(
+        st.session_state.historique_paris
+    )
+    
 # ==============================================================================
 # SECTION HISTORIQUE DES ANALYSES
 # ==============================================================================
