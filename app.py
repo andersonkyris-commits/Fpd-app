@@ -777,7 +777,7 @@ elif sport == "PMU 🐎":
             value=5.0
         )
     # =========================
-    # HISTORIQUE
+    # BUTTON ANALYSE
     # =========================
     if st.button("📊 Analyser PMU"):
         
