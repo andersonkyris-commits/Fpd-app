@@ -754,11 +754,39 @@ elif sport == "Tennis 🎾":
 
         sauvegarder_historique(st.session_state.historique_paris)
 
-#===============================================================================
+# ==============================================================================
 # MODULE PMU BET
-#===============================================================================
+# ==============================================================================
 elif sport == "PMU 🐎":
     st.header("🐎 Analyse PMU V1")
+
+        course = st.text_input("Nom de la course")
+
+        cheval = st.text_input("Nom du cheval")
+
+        nb_partants = st.number_input(
+            "Nombre de partants",
+            min_value=2,
+            max_value=30,
+            value=10
+        )
+
+        cote = st.number_input(
+            "Cote du cheval",
+            min_value=1.01,
+            value=5.0
+        )
+    # =========================
+    # HISTORIQUE
+    # =========================
+    if st.button("📊 Analyser PMU"):
+        
+        proba = (1 / cote) * 100
+        
+        st.metric(
+            "Probabilité estimée",
+            f"{proba:.1f}%"
+        )
 
 # ==============================================================================
 # SECTION HISTORIQUE DES ANALYSES
