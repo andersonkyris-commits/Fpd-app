@@ -230,7 +230,7 @@ if sport == "Football ⚽":
         "Senegal": 19,
         "Switzerland": 20,
         "Denmark": 21
-  }
+    }
     
     def recuperer_rang_fifa(equipe):
         return FIFA_RANKING.get(equipe)
