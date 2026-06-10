@@ -850,7 +850,7 @@ if st.session_state.historique_paris:
      best_bet = None
      best_score = -999
 
-     for bet in st.session_state.historique_paris:
+    for bet in st.session_state.historique_paris:
 
         # logique de score simple
         value_a = bet.get("Value A", bet.get("Value J1", 0))
