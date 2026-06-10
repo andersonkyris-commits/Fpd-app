@@ -232,13 +232,13 @@ if sport == "Football ⚽":
         "Denmark": 21
   }
     
-def recuperer_rang_fifa(equipe):
-    return FIFA_RANKING.get(equipe)
+    def recuperer_rang_fifa(equipe):
+        return FIFA_RANKING.get(equipe)
     
-    compet_choisie = st.selectbox(
-        "Compétition",
-        list(DICT_COMPETS.keys())
-    )
+        compet_choisie = st.selectbox(
+            "Compétition",
+            list(DICT_COMPETS.keys())
+        )
 
     code_compet = DICT_COMPETS[compet_choisie]
     if code_compet in ["PL", "FL1", "PD", "SA", "BL1"]:
