@@ -843,14 +843,6 @@ elif sport == "PMU 🐎":
 # SECTION HISTORIQUE DES ANALYSES
 # ==============================================================================
 st.markdown("---")
-st.header("🗂️ Journal d'Historique des Analyses")
-if st.session_state.historique_paris:
-
-# =========================
-# MEILLEUR PARI DU JOUR
-# =========================
-
-st.markdown("---")
 st.header("🔥 Meilleur pari du jour")
 
 if st.session_state.historique_paris:
