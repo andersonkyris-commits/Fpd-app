@@ -20,6 +20,7 @@ football_headers = {
     "X-Auth-Token": FOOTBALL_API_KEY
 }
 
+
 @st.cache_data(ttl=3600)
 def recuperer_tous_les_rankings():
     time.sleep(0.5)  # petit buffer anti spam
@@ -237,7 +238,7 @@ if sport == "Football ⚽":
             f"competitions/{code}/matches"
         )
 
-        try:
+        try:all
 
             r = requests.get(
                 url,
