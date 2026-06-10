@@ -239,7 +239,6 @@ if sport == "Football ⚽":
         )
 
         try:all
-
             r = requests.get(
                 url,
                 headers=football_headers,
