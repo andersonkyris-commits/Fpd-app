@@ -354,6 +354,15 @@ def recuperer_rang_fifa(equipe):
             team_a = match_data["homeTeam"]["name"]
             team_b = match_data["awayTeam"]["name"]
 
+            rang_a = recuperer_rang_fifa(team_a)
+            rang_b = recuperer_rang_fifa(team_b)
+
+            if rang_a:
+                st.info(f"🏆 Rang FIFA {team_a} : {rang_a}")
+
+            if rang_b:
+                st.info(f"🏆 Rang FIFA {team_b} : {rang_b}")
+
         else:
 
             st.warning("Aucun match à venir")
@@ -394,10 +403,10 @@ def recuperer_rang_fifa(equipe):
         rang_b = recuperer_rang_fifa(team_b)
 
         if rang_a:
-            st.info(f"🏆 Rang FIFA {team_a} : {rang_a}")
+            bonus_a += max(0, 30 - rang_a)
 
         if rang_b:
-            st.info(f"🏆 Rang FIFA {team_b} : {rang_b}")
+            bonus_b += max(0, 30 - rang_b)
 
         # Type de compétition
         if type_compet == "championnat":
