@@ -760,22 +760,23 @@ elif sport == "Tennis 🎾":
 elif sport == "PMU 🐎":
     st.header("🐎 Analyse PMU V1")
 
-        course = st.text_input("Nom de la course")
+    course = st.text_input("Nom de la course")
 
-        cheval = st.text_input("Nom du cheval")
+    cheval = st.text_input("Nom du cheval")
 
-        nb_partants = st.number_input(
-            "Nombre de partants",
-            min_value=2,
-            max_value=30,
-            value=10
-        )
+    nb_partants = st.number_input(
+        "Nombre de partants",
+        min_value=2,
+        max_value=30,
+        value=10
+    )
 
-        cote = st.number_input(
-            "Cote du cheval",
-            min_value=1.01,
-            value=5.0
-        )
+    cote = st.number_input(
+        "Cote du cheval",
+        min_value=1.01,
+        value=5.0
+    )
+    
     # =========================
     # BUTTON ANALYSE
     # =========================
