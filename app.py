@@ -136,7 +136,7 @@ if "historique_paris" not in st.session_state:
     st.session_state.historique_paris = charger_historique()
 
 # Onglets principaux
-sport = st.sidebar.radio("🗂️ Sélectionne le Sport", ["Football ⚽", "Tennis 🎾"])
+sport = st.sidebar.radio("🗂️ Sélectionne le Sport", ["Football ⚽", "Tennis 🎾", "PMU 🐎"])
 
 # Dictionnaire des Tournois Majeurs et leurs surfaces associées
 DICTIONNAIRE_TOURNOIS = {
@@ -753,7 +753,13 @@ elif sport == "Tennis 🎾":
         })
 
         sauvegarder_historique(st.session_state.historique_paris)
-        
+
+#===============================================================================
+# MODULE PMU BET
+#===============================================================================
+elif sport == "PMU 🐎":
+    st.header("🐎 Analyse PMU V1")
+
 # ==============================================================================
 # SECTION HISTORIQUE DES ANALYSES
 # ==============================================================================
