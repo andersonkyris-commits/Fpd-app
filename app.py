@@ -856,6 +856,11 @@ if st.session_state.historique_paris:
         value_b = bet.get("Value B", bet.get("Value J2", 0))
         confidence = bet.get("Confiance", 0)
 
+        try:
+            confidence = float(confidence)
+        except:
+            confidence = 0
+
         score = max(value_a, value_b) + (confidence * 0.3)
 
         if score > best_score:
