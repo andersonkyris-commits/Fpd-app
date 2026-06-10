@@ -853,7 +853,6 @@ if st.session_state.historique_paris:
 
     for bet in st.session_state.historique_paris:
 
-        # logique de score simple
         value_a = bet.get("Value A", bet.get("Value J1", 0))
         value_b = bet.get("Value B", bet.get("Value J2", 0))
         confidence = bet.get("Confiance", 0)
@@ -865,21 +864,35 @@ if st.session_state.historique_paris:
             best_bet = bet
 
     if best_bet:
-
         st.success("🏆 Meilleure opportunité détectée")
-
         st.write("Sport :", best_bet.get("Sport"))
-        st.write("Match / Course :", best_bet.get("Match", best_bet.get("Course")))
+        st.write(
+            "Match / Course :",
+            best_bet.get("Match", best_bet.get("Course"))
+        )
         st.write("Score global :", round(best_score, 1))
 
 else:
     st.info("Aucune analyse disponible")
-    
+
+
+# =========================
+# HISTORIQUE
+# =========================
+
+st.markdown("---")
+st.header("🗂️ Historique")
+
+if st.session_state.historique_paris:
+
     st.table(st.session_state.historique_paris)
+
     if st.button("🗑️ Effacer l'historique"):
         st.session_state.historique_paris = []
         sauvegarder_historique([])
         st.rerun()
+
 else:
     st.info("💡 Aucune analyse enregistrée pour le moment.")
+    
         
